@@ -1,0 +1,26 @@
+{
+  "name": "blake2-solidity",
+  "version": "1.0.0",
+  "description": "This is a Solidity library aiming to implement BLAKE2.",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "truffle test --network kovan"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BeamMW/blake2-solidity.git"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/BeamMW/blake2-solidity/issues"
+  },
+  "homepage": "https://github.com/BeamMW/blake2-solidity#readme",
+  "dependencies": {
+    "blake2b": "^2.1.3",
+    "dotenv": "^8.2.0",
+    "truffle-hdwallet-provider": "^1.0.17"
+  }
+}
