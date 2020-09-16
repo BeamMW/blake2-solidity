@@ -1,12 +1,14 @@
 pragma solidity ^0.5.0;
-pragma experimental ABIEncoderV2;
 
 import "./Blake2b.sol";
 
 contract Blake2bTest {
     using Blake2b for Blake2b.Instance;
 
-    function testOneBlock(bytes memory input, uint input_len) public returns (bytes memory) {
+    function testOneBlock(bytes memory input, uint input_len)
+    public view
+    returns (bytes memory)
+    {
         Blake2b.Instance memory instance = Blake2b.init(hex"", 64);
         return instance.finalize(input, input_len);
     }
@@ -15,7 +17,10 @@ contract Blake2bTest {
     //   https://forum.zcashcommunity.com/t/calculate-solutionsize/21042/2
     // and
     //   https://github.com/zcash/zcash/blob/996fccf267eedbd512619acc45e6d3c1aeabf3ab/src/crypto/equihash.cpp#L716
-    function equihashTestN200K9() public returns (uint ret) {
+    function equihashTestN200K9()
+    public view
+    returns (uint ret)
+    {
         bytes memory scratch = new bytes(128);
         bytes memory scratch_ptr;
         assembly {
@@ -36,7 +41,10 @@ contract Blake2bTest {
         }
     }
 
-    function equihashTestN200K9(uint32[512] memory solutions) public returns (uint ret) {
+    function equihashTestN200K9(uint32[512] memory solutions)
+    public view
+    returns (uint ret)
+    {
         bytes memory scratch = new bytes(128);
         bytes memory scratch_ptr;
         assembly {
