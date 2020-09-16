@@ -1,4 +1,5 @@
 const TestVectors = require('./blake2ref/testvectors/blake2-kat.json')
+const blake2b = require('blake2b')
 const Blake2bTest = artifacts.require('Blake2bTest.sol')
 
 contract('Blake2bTest', function (accounts) {
@@ -6,6 +7,17 @@ contract('Blake2bTest', function (accounts) {
 
   before(async () => {
     contract = await Blake2bTest.new()
+  })
+
+  it('random string', async () => {
+    const dataString = 'That is one small step for a man, one giant leap for mankind'
+
+    const dataBuffer = Buffer.from(dataString)
+    const input = Buffer.alloc(128, 0)
+    dataBuffer.copy(input)
+
+    const ret = await contract.testOneBlock.call(input, dataBuffer.length)
+    assert.equal(ret, '0x' + blake2b(64).update(dataBuffer).digest('hex'), 'hash mismatch')
   })
 
   it('smoke', async () => {
