@@ -5,6 +5,8 @@ import "./Blake2b.sol";
 contract CultivationTest {
     using Blake2b for Blake2b.Instance;
 
+    bytes constant FORK_HASH = hex"ccabdcee29eb38842626ad1155014e2d7fc1b00d0a70ccb3590878bdb7f26a02";
+
     struct PoW {
         bytes indicies;
         bytes nonce;
@@ -65,7 +67,8 @@ contract CultivationTest {
         bytes32 chainWork,
         bytes32 kernels,
         bytes32 definition,
-        uint64 timestamp
+        uint64 timestamp,
+        bytes memory pow
     ) private pure returns (SystemState memory state) {
         state.height = height;
         state.prev = prev;
@@ -75,10 +78,10 @@ contract CultivationTest {
         state.definition = definition;
         state.timestamp = timestamp;
 
-        // TODO: PoW
+        state.pow = exactPoW(pow);
     }
 
-    function encodeState(SystemState memory state)
+    function encodeState(SystemState memory state, bool total)
         private
         pure
         returns (bytes memory)
@@ -93,8 +96,17 @@ contract CultivationTest {
             state.definition,
             state.timestamp
         );
+        bytes memory fork = FORK_HASH; // TODO: find correct fork
+        bytes memory encoded = abi.encodePacked(prefix, element, fork);
+        if (total) {
+            encoded = abi.encodePacked(
+                encoded,
+                state.pow.indicies,
+                state.pow.nonce
+            );
+        }
 
-        return abi.encodePacked(prefix, element);
+        return encoded;
     }
 
     function process(
@@ -103,7 +115,8 @@ contract CultivationTest {
         bytes32 chainWork,
         bytes32 kernels,
         bytes32 definition,
-        uint64 timestamp
+        uint64 timestamp,
+        bytes memory pow
     ) public pure returns (bytes memory) {
         SystemState memory state = compileState(
             height,
@@ -111,9 +124,10 @@ contract CultivationTest {
             chainWork,
             kernels,
             definition,
-            timestamp
+            timestamp,
+            pow
         );
-        bytes memory encodedState = encodeState(state);
+        bytes memory encodedState = encodeState(state, true);
         return abi.encodePacked(sha256(encodedState));
     }
 

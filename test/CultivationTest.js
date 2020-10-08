@@ -16,8 +16,9 @@ contract('CultivationTest', function (accounts) {
     const kernels = Buffer.from('ccabdcee29eb38842626ad1155014e2d7fc1b00d0a70ccb3590878bdb7f26a02', 'hex')
     const definition = Buffer.from('da1cf1a333d3e8b0d44e4c0c167df7bf604b55352e5bca3bc67dfd350fb707e9', 'hex')
     const timestamp = 1600968920
+    const pow = Buffer.from('188306068af692bdd9d40355eeca8640005aa7ff65b61a85b45fc70a8a2ac127db2d90c4fc397643a5d98f3e644f9f59fcf9677a0da2e90f597f61a1bf17d67512c6d57e680d0aa2642f7d275d2700188dbf8b43fac5c88fa08fa270e8d8fbc33777619b00000000ad636476f7117400acd56618', 'hex')
 
-    const ret = await contract.process.call(height, prev, chainWork, kernels, definition, timestamp)
+    const ret = await contract.process.call(height, prev, chainWork, kernels, definition, timestamp, pow)
     console.log('state hash', ret)
   })
 
