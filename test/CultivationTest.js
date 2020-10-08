@@ -9,6 +9,18 @@ contract('CultivationTest', function (accounts) {
     contract = await CultivationTest.new()
   })
 
+  it('sha256 hash processor', async () => {
+    const height = 903720
+    const prev = Buffer.from('62020e8ee408de5fdbd4c815e47ea098f5e30b84c788be566ac9425e9b07804d', 'hex')
+    const chainWork = Buffer.from('0000000000000000000000000000000000000000000000aa0bd15c0cf6e00000', 'hex')
+    const kernels = Buffer.from('ccabdcee29eb38842626ad1155014e2d7fc1b00d0a70ccb3590878bdb7f26a02', 'hex')
+    const definition = Buffer.from('da1cf1a333d3e8b0d44e4c0c167df7bf604b55352e5bca3bc67dfd350fb707e9', 'hex')
+    const timestamp = 1600968920
+
+    const ret = await contract.process.call(height, prev, chainWork, kernels, definition, timestamp)
+    console.log('state hash', ret)
+  })
+
   it('random string', async () => {
     const dataString = 'That is one small step for a man, one giant leap for mankind'
 
