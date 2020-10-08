@@ -21,6 +21,12 @@ contract('CultivationTest', function (accounts) {
     console.log('state hash', ret)
   })
 
+  it('check pow', async () => {
+    const pow = Buffer.from('188306068af692bdd9d40355eeca8640005aa7ff65b61a85b45fc70a8a2ac127db2d90c4fc397643a5d98f3e644f9f59fcf9677a0da2e90f597f61a1bf17d67512c6d57e680d0aa2642f7d275d2700188dbf8b43fac5c88fa08fa270e8d8fbc33777619b00000000ad636476f7117400acd56618', 'hex')
+    const ret = await contract.checkPoW.call(pow)
+    console.log('PoW struct', ret)
+  })
+
   it('random string', async () => {
     const dataString = 'That is one small step for a man, one giant leap for mankind'
 
