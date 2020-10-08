@@ -2,7 +2,7 @@ pragma solidity ^0.5.0;
 
 import "./Blake2b.sol";
 
-contract Blake2bTest {
+contract CultivationTest {
     using Blake2b for Blake2b.Instance;
 
     function testOneBlock(bytes memory input, uint input_len)

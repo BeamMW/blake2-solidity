@@ -1,12 +1,12 @@
 const TestVectors = require('./blake2ref/testvectors/blake2-kat.json')
 const blake2b = require('blake2b')
-const Blake2bTest = artifacts.require('Blake2bTest.sol')
+const CultivationTest = artifacts.require('CultivationTest.sol')
 
-contract('Blake2bTest', function (accounts) {
+contract('CultivationTest', function (accounts) {
   let contract
 
   before(async () => {
-    contract = await Blake2bTest.new()
+    contract = await CultivationTest.new()
   })
 
   it('random string', async () => {
