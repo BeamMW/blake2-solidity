@@ -3,9 +3,8 @@ pragma solidity ^0.5.0;
 import "./Blake2b.sol";
 
 contract CultivationTest {
+    uint256[3] private FORKS = [0xed91a717313c6eb0e3f082411584d0da8f0c8af2a4ac01e5af1959e0ec4338bc, 0x6d622e615cfd29d0f8cdd9bdd73ca0b769c8661b29d7ba9c45856c96bc2ec5bc, 0x1ce8f721bf0c9fa7473795a97e365ad38bbc539aab821d6912d86f24e67720fc];
     using Blake2b for Blake2b.Instance;
-
-    bytes constant FORK_HASH = hex"ccabdcee29eb38842626ad1155014e2d7fc1b00d0a70ccb3590878bdb7f26a02";
 
     struct PoW {
         bytes indicies;
@@ -48,19 +47,6 @@ contract CultivationTest {
         }
     }
 
-    function checkPoW(bytes memory raw)
-        public
-        pure
-        returns (
-            bytes memory indicies,
-            bytes memory nonce,
-            uint32 difficulty
-        )
-    {
-        PoW memory pow = exactPoW(raw);
-        return (pow.indicies, pow.nonce, pow.difficulty);
-    }
-
     function compileState(
         uint64 height,
         bytes32 prev,
@@ -81,23 +67,62 @@ contract CultivationTest {
         state.pow = exactPoW(pow);
     }
 
-    function encodeState(SystemState memory state, bool total)
+    function findFork(uint64 height)
+        private
+        pure
+        returns (uint8)
+    {
+        if (height >= 777777) return 2;
+        if (height >= 321321) return 1;
+        return 0;
+    }
+
+    function getForkHash(uint8 fork)
+        private
+        view
+        returns (uint256)
+    {
+        if (fork < FORKS.length) {
+            return FORKS[fork];
+        }
+        return FORKS[0];
+    }
+
+    function encodeUint(uint value)
         private
         pure
         returns (bytes memory)
     {
+        bytes memory encoded;
+        for (; value >= 0x80; value >>= 7) {
+            encoded = abi.encodePacked(encoded, uint8(uint8(value) | 0x80));
+        }
+        return abi.encodePacked(encoded, uint8(value));
+    }
+
+    function encodeState(SystemState memory state, bool total)
+        private
+        view
+        returns (bytes memory)
+    {
         bytes memory prefix = abi.encodePacked(
-            state.height,
+            encodeUint(state.height),
             state.prev,
             state.chainWork
         );
         bytes memory element = abi.encodePacked(
             state.kernels,
             state.definition,
-            state.timestamp
+            encodeUint(state.timestamp),
+            encodeUint(state.pow.difficulty)
         );
-        bytes memory fork = FORK_HASH; // TODO: find correct fork
-        bytes memory encoded = abi.encodePacked(prefix, element, fork);
+        bytes memory encoded = abi.encodePacked(prefix, element);
+
+        uint8 iFork = findFork(state.height);
+        if (iFork >= 2) {
+            encoded = abi.encodePacked(encoded, getForkHash(iFork));
+        }
+
         if (total) {
             encoded = abi.encodePacked(
                 encoded,
@@ -117,7 +142,7 @@ contract CultivationTest {
         bytes32 definition,
         uint64 timestamp,
         bytes memory pow
-    ) public pure returns (bytes memory) {
+    ) public view returns (bytes memory) {
         SystemState memory state = compileState(
             height,
             prev,

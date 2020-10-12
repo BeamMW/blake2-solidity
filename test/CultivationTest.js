@@ -19,13 +19,7 @@ contract('CultivationTest', function (accounts) {
     const pow = Buffer.from('188306068af692bdd9d40355eeca8640005aa7ff65b61a85b45fc70a8a2ac127db2d90c4fc397643a5d98f3e644f9f59fcf9677a0da2e90f597f61a1bf17d67512c6d57e680d0aa2642f7d275d2700188dbf8b43fac5c88fa08fa270e8d8fbc33777619b00000000ad636476f7117400acd56618', 'hex')
 
     const ret = await contract.process.call(height, prev, chainWork, kernels, definition, timestamp, pow)
-    console.log('state hash', ret)
-  })
-
-  it('check pow', async () => {
-    const pow = Buffer.from('188306068af692bdd9d40355eeca8640005aa7ff65b61a85b45fc70a8a2ac127db2d90c4fc397643a5d98f3e644f9f59fcf9677a0da2e90f597f61a1bf17d67512c6d57e680d0aa2642f7d275d2700188dbf8b43fac5c88fa08fa270e8d8fbc33777619b00000000ad636476f7117400acd56618', 'hex')
-    const ret = await contract.checkPoW.call(pow)
-    console.log('PoW struct', ret)
+    assert.equal(ret, '0x23fe8673db74c43d4933b1f2d16db11b1a4895e3924a2f9caf92afa89fd01faf', 'hash mismatch')
   })
 
   it('random string', async () => {
