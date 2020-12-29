@@ -161,7 +161,7 @@ contract CultivationTest {
         view
         returns (bytes memory)
     {
-        Blake2b.Instance memory instance = Blake2b.init(hex"", 64);
+        Blake2b.Instance memory instance = Blake2b.init(hex"", 32);
         return instance.finalize(input, input_len);
     }
 
