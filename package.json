@@ -21,6 +21,7 @@
   "dependencies": {
     "blake2b": "^2.1.3",
     "dotenv": "^8.2.0",
+    "truffle": "^5.1.65",
     "truffle-hdwallet-provider": "^1.0.17"
   }
 }
