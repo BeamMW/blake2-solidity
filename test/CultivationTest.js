@@ -68,6 +68,18 @@ contract('CultivationTest', function (accounts) {
     console.log('Gas usage', await contract.equihashTestN200K9.estimateGas())
   })
 
+  it('siphash 1', async () => {
+    const ret = await contract.siphash24.call(1, 1, 1, 1, 5)
+    assert.equal(ret.toString(), '7264459501755763704', 'output mismatch')
+    console.log('Gas usage', await contract.siphash24.estimateGas(1, 1, 1, 1, 5))
+  })
+
+  it('siphash 2', async () => {
+    const ret = await contract.siphash24.call(5, 5, 5, 5, 55)
+    assert.equal(ret.toString(), '4391933214157750439', 'output mismatch')
+    console.log('Gas usage', await contract.siphash24.estimateGas(5, 5, 5, 5, 55))
+  })
+
   // it('blake2b reference test vectors', async () => {
   //   for (var i in TestVectors) {
   //     const testCase = TestVectors[i]
