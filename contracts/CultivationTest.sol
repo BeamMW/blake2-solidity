@@ -267,4 +267,37 @@ contract CultivationTest {
 
         ret = v0 ^ v1 ^ v2 ^ v3;
     }
+
+    function indexDecoder(uint8[] memory soln)
+        public
+        returns (uint32[32] memory result)
+    {
+        uint8 maskSize = 25;
+        uint32 mask = 1;
+        mask = ((mask << maskSize) - 1);
+
+        uint8 currentSize = 0;
+        uint32 buffer = 0;
+        uint8 index = 0;
+
+        uint32[32] memory ret;
+        // check size of soln
+        for (uint8 i = 0; i < 100; i++)
+        {
+            uint32 tmp = soln[i];
+            tmp <<= currentSize;
+            buffer |= tmp;
+            currentSize += 8;
+
+            if (currentSize >= maskSize)
+            {
+                ret[index] = buffer & mask; 
+                index++;
+                buffer >>= maskSize;
+                currentSize -= maskSize;
+            }
+        }
+
+        result = ret;
+    }
 }

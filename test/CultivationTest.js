@@ -80,6 +80,17 @@ contract('CultivationTest', function (accounts) {
     console.log('Gas usage', await contract.siphash24.estimateGas(5, 5, 5, 5, 55))
   })
 
+  it('index dexoder', async () => {
+    let arr=[]
+
+    for (i = 0; i < 100; i++)
+    {
+      arr.push(1);
+    }
+    const ret = await contract.indexDecoder.call(arr)
+    console.log('mask ', ret)
+  })
+
   // it('blake2b reference test vectors', async () => {
   //   for (var i in TestVectors) {
   //     const testCase = TestVectors[i]
