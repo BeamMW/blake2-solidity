@@ -1,6 +1,7 @@
 pragma solidity ^0.5.0;
 
 import "./Blake2b.sol";
+import {SipHash} from "./SipHash.sol";
 
 contract CultivationTest {
     uint256[3] private FORKS = [0xed91a717313c6eb0e3f082411584d0da8f0c8af2a4ac01e5af1959e0ec4338bc, 0x6d622e615cfd29d0f8cdd9bdd73ca0b769c8661b29d7ba9c45856c96bc2ec5bc, 0x1ce8f721bf0c9fa7473795a97e365ad38bbc539aab821d6912d86f24e67720fc];
@@ -217,55 +218,11 @@ contract CultivationTest {
         assert(ret == 0);
     }
 
-    uint64 private v0;
-    uint64 private v1;
-    uint64 private v2;
-    uint64 private v3;
-
-    function rotl(uint64 x, uint64 b)
-        private
-        pure
-        returns (uint64 ret)
-    {
-        ret = (x << b) | (x >> (64 - b));
-    }
-
-    function sipRound()
-        private
-    {
-        v0 += v1; v2 += v3;
-        v1 = rotl(v1, 13);
-        v3 = rotl(v3, 16);
-        v1 ^= v0; v3 ^= v2;
-        v0 = rotl(v0, 32);
-        v2 += v1; v0 += v3;
-        v1 = rotl(v1, 17);
-        v3 = rotl(v3, 21);
-        v1 ^= v2; v3 ^= v0;
-        v2 = rotl(v2, 32);
-    }
-
     function siphash24(uint64 state0, uint64 state1, uint64 state2, uint64 state3, uint64 nonce)
         public
-        returns (uint64 ret)
+        returns (uint64)
     {
-        v0 = state0;
-        v1 = state1;
-        v2 = state2;
-        v3 = state3;
-
-        v3 ^= nonce;
-
-        sipRound();
-        sipRound();
-        v0 ^= nonce;
-        v2 ^= 0xff;
-        sipRound();
-        sipRound();
-        sipRound();
-        sipRound();
-
-        ret = v0 ^ v1 ^ v2 ^ v3;
+        return SipHash.siphash24(state0, state1, state2, state3, nonce);
     }
 
     function indexDecoder(uint8[] memory soln)
