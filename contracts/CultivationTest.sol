@@ -246,7 +246,7 @@ contract CultivationTest {
     }
 
     function siphash24(uint64 state0, uint64 state1, uint64 state2, uint64 state3, uint64 nonce)
-        public        
+        public
         returns (uint64 ret)
     {
         v0 = state0;
@@ -299,5 +299,44 @@ contract CultivationTest {
         }
 
         result = ret;
+    }
+
+    function initStepElem(uint64 state0, uint64 state1, uint64 state2, uint64 state3, uint64 index)
+        public
+        returns (uint64[7] memory result)
+    {
+        uint8 i = 7;
+        do {
+            i--;
+            result[i] = siphash24(state0, state1, state2, state3, (index << 3) + i);
+        } while(i > 0);
+    }
+
+    function mergeWith(uint64[7] memory my, uint64[7] memory other/*, uint32 remLem*/)
+        public
+        returns (uint64[7] memory result)
+    {
+        for (uint8 i = 0; i < 7; i++)
+        {
+            result[i] = my[i] ^ other[i];
+        }
+
+        // TODO need to implement shift
+    }
+
+    function applyMix()
+        public
+    {
+
+    }
+
+    function hasColision(uint64[7] memory my, uint64[7] memory other)
+        public
+        returns (bool result)
+    {
+        uint64 val = my[0] ^ other[0];
+        uint64 mask = (1 << 24) - 1;
+
+        result = (val & mask) == 0;
     }
 }
