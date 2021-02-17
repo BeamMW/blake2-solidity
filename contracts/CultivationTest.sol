@@ -2,10 +2,12 @@ pragma solidity ^0.5.0;
 
 import "./Blake2b.sol";
 import {SipHash} from "./SipHash.sol";
+import "./StepElem.sol";
 
 contract CultivationTest {
     uint256[3] private FORKS = [0xed91a717313c6eb0e3f082411584d0da8f0c8af2a4ac01e5af1959e0ec4338bc, 0x6d622e615cfd29d0f8cdd9bdd73ca0b769c8661b29d7ba9c45856c96bc2ec5bc, 0x1ce8f721bf0c9fa7473795a97e365ad38bbc539aab821d6912d86f24e67720fc];
     using Blake2b for Blake2b.Instance;
+    using StepElem for StepElem.Instance;
 
     struct PoW {
         bytes indicies;
@@ -220,6 +222,7 @@ contract CultivationTest {
 
     function siphash24(uint64 state0, uint64 state1, uint64 state2, uint64 state3, uint64 nonce)
         public
+        pure
         returns (uint64)
     {
         return SipHash.siphash24(state0, state1, state2, state3, nonce);
@@ -227,6 +230,7 @@ contract CultivationTest {
 
     function indexDecoder(uint8[] memory soln)
         public
+        pure
         returns (uint32[32] memory result)
     {
         uint8 maskSize = 25;
@@ -258,42 +262,74 @@ contract CultivationTest {
         result = ret;
     }
 
-    function initStepElem(uint64 state0, uint64 state1, uint64 state2, uint64 state3, uint64 index)
-        public
-        returns (uint64[7] memory result)
-    {
-        uint8 i = 7;
-        do {
-            i--;
-            result[i] = siphash24(state0, state1, state2, state3, (index << 3) + i);
-        } while(i > 0);
-    }
+    uint32 constant kColisionBitSize = 24;
+    uint32 constant kWorkBitSize = 448;
 
-    function mergeWith(uint64[7] memory my, uint64[7] memory other/*, uint32 remLem*/)
+    function Verify(uint8[] memory soln)
         public
-        returns (uint64[7] memory result)
+        pure
+        returns (bool)
     {
-        for (uint8 i = 0; i < 7; i++)
+        // TODO blake2_b
+        // TODO init
+        uint64 state0 = 0;
+        uint64 state1 = 0;
+        uint64 state2 = 0;
+        uint64 state3 = 0;
+
+        uint32[32] memory indices = indexDecoder(soln);
+
+        // TODO init StepEleme
+        StepElem.Instance[32] memory elemLite;
+        for (uint8 i = 0; i < elemLite.length; i++)
         {
-            result[i] = my[i] ^ other[i];
+            elemLite[i] = StepElem.init(state0, state1, state2, state3, indices[i]);
         }
 
-        // TODO need to implement shift
-    }
+        uint32 round = 1;
+        for (uint32 step = 1; step < indices.length; step <<= 1) {
+            for (uint32 i0 = 0; i0 < indices.length;) {
+                uint32 remLen = kWorkBitSize - (round - 1) * kColisionBitSize;
 
-    function applyMix()
-        public
-    {
+                if (round == 5) remLen -= 64;
 
-    }
+                // TODO need to implement
+                //elemLite[i0].applyMix();
+                uint32 i1 = i0 + step;
+                //elemLite[i1].applyMix();
 
-    function hasColision(uint64[7] memory my, uint64[7] memory other)
-        public
-        returns (bool result)
-    {
-        uint64 val = my[0] ^ other[0];
-        uint64 mask = (1 << 24) - 1;
+                if (!elemLite[i0].hasColision(elemLite[i1]))
+                    return false;
 
-        result = (val & mask) == 0;
+                if (indices[i0] >= indices[i1])
+                    return false;
+
+                remLen = kWorkBitSize - round * kColisionBitSize;
+                if (round == 4) remLen -= 64;
+                if (round == 5) remLen = kColisionBitSize;
+
+                elemLite[i0].mergeWith(elemLite[i1]/*, remLen*/);
+
+                i0 = i1 + step;
+            }
+            round++;
+        }
+
+        for (uint8 i = 0; i < elemLite.length; i++) {
+            for (uint8 j = 0; j < elemLite[i].workWords.length; j++) {
+                if (elemLite[i].workWords[j] != 0)
+                   return false;
+            }
+        }
+
+        // ensure all the indices are distinct
+        for (uint8 i = 0; i < indices.length - 1; i++) {
+            for (uint8 j = i + 1; j < indices.length; j++) {
+                if (indices[i] == indices[j])
+                    return false;
+            }
+        }
+
+        return true;
     }
 }

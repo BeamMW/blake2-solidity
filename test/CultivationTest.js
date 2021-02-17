@@ -87,8 +87,8 @@ contract('CultivationTest', function (accounts) {
     {
       arr.push(1);
     }
-    const ret = await contract.indexDecoder.call(arr)
-    console.log('mask ', ret)
+    /*const ret =*/ await contract.indexDecoder.call(arr)
+    //console.log('mask ', ret)
   })
 
   // it('blake2b reference test vectors', async () => {
