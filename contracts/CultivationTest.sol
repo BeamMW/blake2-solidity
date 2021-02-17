@@ -279,7 +279,6 @@ contract CultivationTest {
 
         uint32[32] memory indices = indexDecoder(soln);
 
-        // TODO init StepEleme
         StepElem.Instance[32] memory elemLite;
         for (uint8 i = 0; i < elemLite.length; i++)
         {
@@ -293,10 +292,9 @@ contract CultivationTest {
 
                 if (round == 5) remLen -= 64;
 
-                // TODO need to implement
-                //elemLite[i0].applyMix();
+                elemLite[i0].applyMix(remLen, indices, i0, step);
                 uint32 i1 = i0 + step;
-                //elemLite[i1].applyMix();
+                elemLite[i1].applyMix(remLen, indices, i1, step);
 
                 if (!elemLite[i0].hasColision(elemLite[i1]))
                     return false;
@@ -308,7 +306,7 @@ contract CultivationTest {
                 if (round == 4) remLen -= 64;
                 if (round == 5) remLen = kColisionBitSize;
 
-                elemLite[i0].mergeWith(elemLite[i1]/*, remLen*/);
+                elemLite[i0].mergeWith(elemLite[i1], remLen);
 
                 i0 = i1 + step;
             }

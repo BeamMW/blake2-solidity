@@ -8,6 +8,10 @@ library StepElem {
         uint64[7] workWords;
     }
 
+    uint32 constant kColisionBitSize = 24;
+    uint32 constant kWorkBitSize = 448;
+    uint32 constant kWordSize = 8;
+
     function init(uint64 state0, uint64 state1, uint64 state2, uint64 state3, uint64 index)
         internal
         pure
@@ -20,7 +24,7 @@ library StepElem {
         } while(i > 0);
     }
 
-    function mergeWith(Instance memory self, Instance memory other/*, uint32 remLem*/)
+    function mergeWith(Instance memory self, Instance memory other, uint32 /*remLem*/)
         internal
         pure
     {
@@ -32,11 +36,47 @@ library StepElem {
         // TODO need to implement shift
     }
 
-    function applyMix()
+    function applyMix(Instance memory self, uint32 remLen, uint32[32] memory indices, uint32 startIndex, uint32 step)
         internal
         pure
     {
-        // TODO need to implement    
+        uint64[9] memory temp;
+
+        // TODO check this code. maybe it is odd
+        for (uint8 i = 0; i < temp.length; i++)
+            temp[i] = 0;
+        
+        for (uint8 i = 0; i < self.workWords.length; i++)
+            temp[i] = self.workWords[i];
+
+        // Add in the bits of the index tree to the end of work bits
+        uint32 padNum = ((512 - remLen) + kColisionBitSize) / (kColisionBitSize + 1);
+
+        if (padNum > step)
+            padNum = step;
+
+        for (uint32 i = 0; i < padNum; i++) {
+            uint32 shift = remLen + i * (kColisionBitSize + 1);
+            uint32 n0 = shift / (kWordSize * 8);
+            shift %= (kWordSize * 8);
+
+            uint64 idx = indices[startIndex + i];
+
+            temp[n0] |= idx << shift;
+
+            if (shift + kColisionBitSize + 1 > kWordSize * 8)
+                temp[n0 + 1] |= idx >> (kWordSize * 8 - shift);
+        }
+
+        // Applyin the mix from the lined up bits
+        uint64 result = 0;
+        for (uint32 i = 0; i < 8; i++)
+            result += SipHash.rotl(temp[i], (29 * (i + 1)) & 0x3F);
+
+        result = SipHash.rotl(result, 24);
+
+        // Wipe out lowest 64 bits in favor of the mixed bits
+        self.workWords[0] = result;
     }
 
     function hasColision(Instance memory self, Instance memory other)
