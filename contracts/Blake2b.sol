@@ -68,6 +68,18 @@ library Blake2b {
         }
 
         // TODO: support salt and personalization
+        // Beam blake2b personalization!
+        // zero padded to 32 bytes
+        bytes memory personalization = hex"4265616d2d506f57c00100000500000000000000000000000000000000000000";
+
+        assembly {
+            let ptr := add(state, 84) // 32+4+48
+            let tmp := mload(ptr)
+            let personalization_ptr := add(personalization, 32)
+            let tmp_personalization := mload(personalization_ptr)
+            tmp := xor(tmp, tmp_personalization)
+            mstore(ptr, tmp)
+        }
 
         if (key_len > 0) {
             require(key_len == 64);
