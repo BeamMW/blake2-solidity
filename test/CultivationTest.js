@@ -91,6 +91,11 @@ contract('CultivationTest', function (accounts) {
     //console.log('mask ', ret)
   })
 
+  it('testShift', async () => {
+    const ret = await contract.testShift.call()
+    console.log('value = ', ret)
+  })
+
   // it('blake2b reference test vectors', async () => {
   //   for (var i in TestVectors) {
   //     const testCase = TestVectors[i]

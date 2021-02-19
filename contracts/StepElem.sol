@@ -11,6 +11,7 @@ library StepElem {
     uint32 constant kColisionBitSize = 24;
     uint32 constant kWorkBitSize = 448;
     uint32 constant kWordSize = 8;
+    uint32 constant kColisionBytes = 3;
 
     function init(uint64 state0, uint64 state1, uint64 state2, uint64 state3, uint64 index)
         internal
@@ -24,16 +25,44 @@ library StepElem {
         } while(i > 0);
     }
 
-    function mergeWith(Instance memory self, Instance memory other, uint32 /*remLem*/)
+    function mergeWith(Instance memory self, Instance memory other, uint32 remLen)
         internal
         pure
     {
-        for (uint8 i = 0; i < 7; i++)
-        {
+        for (uint8 i = 0; i < 7; i++) {
             self.workWords[i] ^= other.workWords[i];
         }
 
-        // TODO need to implement shift
+        uint32 remBytes = remLen / 8;
+        bytes memory buffer = new bytes(7 * 8);
+
+        // copy to buffer
+        for (uint16 i = 0; i < 7; i++) {
+            bytes8 value = bytes8(self.workWords[i]);
+
+            for (uint16 j = 0; j < 8; j++) {
+                buffer[i * 8 + j] = value[j];
+            }
+        }
+
+        // shift to left
+        for (uint16 i = 0; i < remBytes; i++) {
+            buffer[i] = buffer[i + kColisionBytes];
+        }
+
+        for (uint32 i = remBytes; i < buffer.length; i++) {
+            buffer[i] = 0;
+        }
+
+        // copy from buffer
+        for (uint16 i = 0; i < 7; i++) {
+            uint32 start = i * 8;
+            uint64 parsed;
+            assembly {
+                parsed:= mload(add(buffer, add(8, start)))
+            }
+            self.workWords[i] = parsed;
+        }
     }
 
     function applyMix(Instance memory self, uint32 remLen, uint32[32] memory indices, uint32 startIndex, uint32 step)

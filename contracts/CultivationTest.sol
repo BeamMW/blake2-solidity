@@ -330,4 +330,23 @@ contract CultivationTest {
 
         return true;
     }
+
+    function testShift()
+        public
+        pure
+        returns (uint64)
+    {
+        uint64 value = 1;
+        bytes8 b = bytes8(value);
+        bytes memory db = new bytes(8);
+
+        for (uint i = 0; i < db.length; i++) {
+            db[i] = b[i];
+        }
+
+        value = 0;
+        value = uint64(b);
+
+        return value;
+    }
 }
