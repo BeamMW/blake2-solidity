@@ -267,15 +267,29 @@ contract CultivationTest {
 
     function Verify(uint8[] memory soln)
         public
-        pure
+        view
         returns (bool)
     {
-        // TODO blake2_b
-        // TODO init
+        bytes memory buffer = new bytes(256);
+
+        for (uint16 i = 0; i < soln.length; i++) {
+            buffer[i] = byte(soln[i]);
+        }
+
+        // TODO add Beam-PoW
+        Blake2b.Instance memory instance = Blake2b.init(hex"", 32);
+        bytes memory tmp = instance.finalize(buffer, soln.length);
         uint64 state0 = 0;
         uint64 state1 = 0;
         uint64 state2 = 0;
         uint64 state3 = 0;
+
+        assembly {
+            state0 := mload(add(tmp, add(0, 8)))
+            state1 := mload(add(tmp, add(0, 8)))
+            state2 := mload(add(tmp, add(0, 8)))
+            state3 := mload(add(tmp, add(0, 8)))
+        }
 
         uint32[32] memory indices = indexDecoder(soln);
 
