@@ -228,7 +228,7 @@ contract CultivationTest {
         return SipHash.siphash24(state0, state1, state2, state3, nonce);
     }
 
-    function indexDecoder(uint8[] memory soln)
+    function indexDecoder(bytes memory soln)
         public
         pure
         returns (uint32[32] memory result)
@@ -245,7 +245,7 @@ contract CultivationTest {
         // check size of soln
         for (uint8 i = 0; i < 100; i++)
         {
-            uint32 tmp = soln[i];
+            uint32 tmp = uint8(soln[i]);
             tmp <<= currentSize;
             buffer |= tmp;
             currentSize += 8;
@@ -265,32 +265,34 @@ contract CultivationTest {
     uint32 constant kColisionBitSize = 24;
     uint32 constant kWorkBitSize = 448;
 
-    function Verify(uint8[] memory soln)
+    function Verify(bytes memory dataHash, bytes memory nonce, bytes memory soln)
         public
         view
         returns (bool)
     {
-        bytes memory buffer = new bytes(256);
+        bytes memory buffer = new bytes(128);
 
-        for (uint16 i = 0; i < soln.length; i++) {
-            buffer[i] = byte(soln[i]);
+        // TODO it's bad code. need change it
+        uint16 ind = 0;
+        for (uint16 i = 0; i < dataHash.length; i++) {
+            buffer[ind] = dataHash[i];
+            ind++;
+        }
+        for (uint16 i = 0; i < nonce.length; i++) {
+            buffer[ind] = nonce[i];
+            ind++;
+        }
+        for (uint16 i = 0; i < 4; i++) {
+            buffer[ind] = soln[100 + i];
+            ind++;
         }
 
-        // TODO add Beam-PoW
         Blake2b.Instance memory instance = Blake2b.init(hex"", 32);
-        bytes memory tmp = instance.finalize(buffer, soln.length);
-        uint64 state0 = 0;
-        uint64 state1 = 0;
-        uint64 state2 = 0;
-        uint64 state3 = 0;
-
-        assembly {
-            state0 := mload(add(tmp, add(0, 8)))
-            state1 := mload(add(tmp, add(0, 8)))
-            state2 := mload(add(tmp, add(0, 8)))
-            state3 := mload(add(tmp, add(0, 8)))
-        }
-
+        bytes memory tmp = instance.finalize(buffer, dataHash.length + nonce.length + 4);
+        uint64 state0 = StepElem.toUint64(tmp, 0);
+        uint64 state1 = StepElem.toUint64(tmp, 8);
+        uint64 state2 = StepElem.toUint64(tmp, 16);
+        uint64 state3 = StepElem.toUint64(tmp, 24);
         uint32[32] memory indices = indexDecoder(soln);
 
         StepElem.Instance[32] memory elemLite;
@@ -327,11 +329,9 @@ contract CultivationTest {
             round++;
         }
 
-        for (uint8 i = 0; i < elemLite.length; i++) {
-            for (uint8 j = 0; j < elemLite[i].workWords.length; j++) {
-                if (elemLite[i].workWords[j] != 0)
-                   return false;
-            }
+        for (uint8 j = 0; j < elemLite[0].workWords.length; j++) {
+            if (elemLite[0].workWords[j] != 0)
+                return false;
         }
 
         // ensure all the indices are distinct
@@ -343,24 +343,5 @@ contract CultivationTest {
         }
 
         return true;
-    }
-
-    function testShift()
-        public
-        pure
-        returns (uint64)
-    {
-        uint64 value = 1;
-        bytes8 b = bytes8(value);
-        bytes memory db = new bytes(8);
-
-        for (uint i = 0; i < db.length; i++) {
-            db[i] = b[i];
-        }
-
-        value = 0;
-        value = uint64(b);
-
-        return value;
     }
 }

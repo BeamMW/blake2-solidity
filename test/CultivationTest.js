@@ -22,7 +22,7 @@ contract('CultivationTest', function (accounts) {
     assert.equal(ret, '0x23fe8673db74c43d4933b1f2d16db11b1a4895e3924a2f9caf92afa89fd01faf', 'hash mismatch')
   })
 
-  it('random string', async () => {
+  /*it('random string', async () => {
     const dataString = 'That is one small step for a man, one giant leap for mankind'
 
     const dataBuffer = Buffer.from(dataString)
@@ -66,7 +66,7 @@ contract('CultivationTest', function (accounts) {
     const ret = await contract.equihashTestN200K9.call()
     assert.equal(ret.toString(), '14394687529728284581040569373478606499820061758322408099941575726000591405977', 'output mismatch')
     console.log('Gas usage', await contract.equihashTestN200K9.estimateGas())
-  })
+  })*/
 
   it('siphash 1', async () => {
     const ret = await contract.siphash24.call(1, 1, 1, 1, 5)
@@ -80,20 +80,33 @@ contract('CultivationTest', function (accounts) {
     console.log('Gas usage', await contract.siphash24.estimateGas(5, 5, 5, 5, 55))
   })
 
-  it('index dexoder', async () => {
-    let arr=[]
+  /*it('index dexoder', async () => {
+    const soln = Buffer.from('188306068af692bdd9d40355eeca8640005aa7ff65b61a85b45fc70a8a2ac127db2d90c4fc397643a5d98f3e644f9f59fcf9677a0da2e90f597f61a1bf17d67512c6d57e680d0aa2642f7d275d2700188dbf8b43fac5c88fa08fa270e8d8fbc33777619b00000000ad636476f7117400acd56618', 'hex')
+    const ret = await contract.indexDecoder.call(soln)
 
-    for (i = 0; i < 100; i++)
-    {
-      arr.push(1);
+    for (i = 0; i < 32; i++) {
+      console.log('index ', i, ' = ', ret[i].toString())
     }
-    /*const ret =*/ await contract.indexDecoder.call(arr)
-    //console.log('mask ', ret)
+  })*/
+
+  it('valid pow', async () => {
+    const dataHash = Buffer.from('a05ea9b3dd329bbf3e8ef68415eae102021f1d9a995d4a727cb3e307e5d17321', 'hex')
+    const nonce = Buffer.from('ad636476f7117400', 'hex')
+    const soln = Buffer.from('188306068af692bdd9d40355eeca8640005aa7ff65b61a85b45fc70a8a2ac127db2d90c4fc397643a5d98f3e644f9f59fcf9677a0da2e90f597f61a1bf17d67512c6d57e680d0aa2642f7d275d2700188dbf8b43fac5c88fa08fa270e8d8fbc33777619b00000000', 'hex')
+    // difficalty  acd56618
+
+    const ret = await contract.Verify.call(dataHash, nonce, soln);
+    assert.equal(ret, true, 'output mismatch');
   })
 
-  it('testShift', async () => {
-    const ret = await contract.testShift.call()
-    console.log('value = ', ret)
+  it('invalid pow', async () => {
+    const dataHash = Buffer.from('23fe8673db74c43d4933b1f2d16db11b1a4895e3924a2f9caf92afa89fd01faf', 'hex')
+    const nonce = Buffer.from('ad636476f7117400', 'hex')
+    const soln = Buffer.from('188306068af692bdd9d40355eeca8640005aa7ff65b61a85b45fc70a8a2ac127db2d90c4fc397643a5d98f3e644f9f59fcf9677a0da2e90f597f61a1bf17d67512c6d57e680d0aa2642f7d275d2700188dbf8b43fac5c88fa08fa270e8d8fbc33777619b00000000', 'hex')
+    // difficalty  acd56618
+
+    const ret = await contract.Verify.call(dataHash, nonce, soln);
+    assert.equal(ret, false, 'output mismatch');
   })
 
   // it('blake2b reference test vectors', async () => {

@@ -21,8 +21,28 @@ library StepElem {
         uint8 i = 7;
         do {
             i--;
-            result.workWords[i] = SipHash.siphash24(state0, state1, state2, state3, (index << 3) + i);
+            uint64 value = SipHash.siphash24(state0, state1, state2, state3, (index << 3) + i);
+            result.workWords[i] = value;
         } while(i > 0);
+    }
+
+    function toUint64(bytes memory buffer, uint256 start)
+        internal
+        pure
+        returns (uint64)
+    {
+        bytes memory tmp = new bytes(8);
+
+        for(uint8 i = 0; i < 8; i++) {
+            tmp[i] = buffer[start + 7 - i];
+        }
+
+        uint64 value = 0;
+        assembly {
+            value := mload(add(add(tmp, 8), 0))
+        }
+
+        return value;
     }
 
     function mergeWith(Instance memory self, Instance memory other, uint32 remLen)
@@ -40,8 +60,9 @@ library StepElem {
         for (uint16 i = 0; i < 7; i++) {
             bytes8 value = bytes8(self.workWords[i]);
 
+            // revert bytes
             for (uint16 j = 0; j < 8; j++) {
-                buffer[i * 8 + j] = value[j];
+                buffer[i * 8 + 7 - j] = value[j];
             }
         }
 
@@ -57,10 +78,7 @@ library StepElem {
         // copy from buffer
         for (uint16 i = 0; i < 7; i++) {
             uint32 start = i * 8;
-            uint64 parsed;
-            assembly {
-                parsed:= mload(add(buffer, add(8, start)))
-            }
+            uint64 parsed = toUint64(buffer, start);
             self.workWords[i] = parsed;
         }
     }
@@ -72,8 +90,8 @@ library StepElem {
         uint64[9] memory temp;
 
         // TODO check this code. maybe it is odd
-        for (uint8 i = 0; i < temp.length; i++)
-            temp[i] = 0;
+         for (uint8 i = 0; i < temp.length; i++)
+             temp[i] = 0;
         
         for (uint8 i = 0; i < self.workWords.length; i++)
             temp[i] = self.workWords[i];

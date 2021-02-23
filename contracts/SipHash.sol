@@ -12,9 +12,9 @@ library SipHash {
     function rotl(uint64 x, uint64 b)
         internal
         pure
-        returns (uint64 ret)
+        returns (uint64)
     {
-        ret = (x << b) | (x >> (64 - b));
+        return (x << b) | (x >> (64 - b));
     }
 
     function sipRound(State memory state)
