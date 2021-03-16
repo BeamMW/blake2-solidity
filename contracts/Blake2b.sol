@@ -6,7 +6,7 @@
  * License: Apache 2.0
  */
 
-pragma solidity ^0.5.0;
+pragma solidity ^0.7.0;
 
 library Blake2b {
     struct Instance {

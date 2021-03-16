@@ -97,6 +97,7 @@ contract('CultivationTest', function (accounts) {
 
     const ret = await contract.Verify.call(dataHash, nonce, soln);
     assert.equal(ret, true, 'output mismatch');
+    console.log('Gas usage (verify valid pow)', await contract.Verify.estimateGas(dataHash, nonce, soln))
   })
 
   it('invalid pow', async () => {

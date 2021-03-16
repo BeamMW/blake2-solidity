@@ -34,7 +34,7 @@ module.exports = {
 
   networks: {
     development: {
-      provider: () => new HDWalletProvider(process.env.MNEMONIC, 'http://localhost:8543/'),
+      provider: () => new HDWalletProvider(process.env.MNEMONIC, 'http://localhost:8543/', 0, 5),
       network_id: '*'
     },
 
@@ -52,7 +52,7 @@ module.exports = {
   // Configure your compilers
   compilers: {
     solc: {
-      version: '0.5.11', // Fetch exact version from solc-bin (default: truffle's version)
+      version: '0.7.2', // Fetch exact version from solc-bin (default: truffle's version)
       // docker: true,        // Use "0.5.1" you've installed locally with docker (default: false)
       settings: { // See the solidity docs for advice about optimization and evmVersion
         optimizer: {

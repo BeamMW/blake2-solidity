@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.7.0;
 
 import "./Blake2b.sol";
 import {SipHash} from "./SipHash.sol";
