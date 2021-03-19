@@ -39,7 +39,7 @@ library StepElem {
 
         uint64 value = 0;
         assembly {
-            value := mload(add(add(tmp, 8), 0))
+            value := mload(add(tmp, 8))
         }
 
         return value;
