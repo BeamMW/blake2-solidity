@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache 2.0
 /*
  * Blake2b library in Solidity using EIP-152
  *

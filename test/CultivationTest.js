@@ -9,7 +9,7 @@ contract('CultivationTest', function (accounts) {
     contract = await CultivationTest.new()
   })
 
-  it('sha256 hash processor', async () => {
+  it('sha256 hash processor, full hash of header', async () => {
     const height = 903720
     const prev = Buffer.from('62020e8ee408de5fdbd4c815e47ea098f5e30b84c788be566ac9425e9b07804d', 'hex')
     const chainWork = Buffer.from('0000000000000000000000000000000000000000000000aa0bd15c0cf6e00000', 'hex')
@@ -18,8 +18,35 @@ contract('CultivationTest', function (accounts) {
     const timestamp = 1600968920
     const pow = Buffer.from('188306068af692bdd9d40355eeca8640005aa7ff65b61a85b45fc70a8a2ac127db2d90c4fc397643a5d98f3e644f9f59fcf9677a0da2e90f597f61a1bf17d67512c6d57e680d0aa2642f7d275d2700188dbf8b43fac5c88fa08fa270e8d8fbc33777619b00000000ad636476f7117400acd56618', 'hex')
 
-    const ret = await contract.process.call(height, prev, chainWork, kernels, definition, timestamp, pow)
+    const ret = await contract.getHeaderHash.call(height, prev, chainWork, kernels, definition, timestamp, pow, true)
     assert.equal(ret, '0x23fe8673db74c43d4933b1f2d16db11b1a4895e3924a2f9caf92afa89fd01faf', 'hash mismatch')
+  })
+
+  it('sha256 hash processor, prepow hash', async () => {
+    const height = 903720
+    const prev = Buffer.from('62020e8ee408de5fdbd4c815e47ea098f5e30b84c788be566ac9425e9b07804d', 'hex')
+    const chainWork = Buffer.from('0000000000000000000000000000000000000000000000aa0bd15c0cf6e00000', 'hex')
+    const kernels = Buffer.from('ccabdcee29eb38842626ad1155014e2d7fc1b00d0a70ccb3590878bdb7f26a02', 'hex')
+    const definition = Buffer.from('da1cf1a333d3e8b0d44e4c0c167df7bf604b55352e5bca3bc67dfd350fb707e9', 'hex')
+    const timestamp = 1600968920
+    const pow = Buffer.from('188306068af692bdd9d40355eeca8640005aa7ff65b61a85b45fc70a8a2ac127db2d90c4fc397643a5d98f3e644f9f59fcf9677a0da2e90f597f61a1bf17d67512c6d57e680d0aa2642f7d275d2700188dbf8b43fac5c88fa08fa270e8d8fbc33777619b00000000ad636476f7117400acd56618', 'hex')
+
+    const ret = await contract.getHeaderHash.call(height, prev, chainWork, kernels, definition, timestamp, pow, false)
+    assert.equal(ret, '0xa05ea9b3dd329bbf3e8ef68415eae102021f1d9a995d4a727cb3e307e5d17321', 'hash mismatch')
+  })
+
+  it('block header validation', async () => {
+    const height = 903720
+    const prev = Buffer.from('62020e8ee408de5fdbd4c815e47ea098f5e30b84c788be566ac9425e9b07804d', 'hex')
+    const chainWork = Buffer.from('0000000000000000000000000000000000000000000000aa0bd15c0cf6e00000', 'hex')
+    const kernels = Buffer.from('ccabdcee29eb38842626ad1155014e2d7fc1b00d0a70ccb3590878bdb7f26a02', 'hex')
+    const definition = Buffer.from('da1cf1a333d3e8b0d44e4c0c167df7bf604b55352e5bca3bc67dfd350fb707e9', 'hex')
+    const timestamp = 1600968920
+    const pow = Buffer.from('188306068af692bdd9d40355eeca8640005aa7ff65b61a85b45fc70a8a2ac127db2d90c4fc397643a5d98f3e644f9f59fcf9677a0da2e90f597f61a1bf17d67512c6d57e680d0aa2642f7d275d2700188dbf8b43fac5c88fa08fa270e8d8fbc33777619b00000000ad636476f7117400acd56618', 'hex')
+
+    const ret = await contract.isHeaderValid.call(height, prev, chainWork, kernels, definition, timestamp, pow)
+    assert.equal(ret, true, 'output mismatch');
+    console.log('Gas usage (block header validation)', await contract.isHeaderValid.estimateGas(height, prev, chainWork, kernels, definition, timestamp, pow))
   })
 
   /*it('random string', async () => {
@@ -95,9 +122,9 @@ contract('CultivationTest', function (accounts) {
     const soln = Buffer.from('188306068af692bdd9d40355eeca8640005aa7ff65b61a85b45fc70a8a2ac127db2d90c4fc397643a5d98f3e644f9f59fcf9677a0da2e90f597f61a1bf17d67512c6d57e680d0aa2642f7d275d2700188dbf8b43fac5c88fa08fa270e8d8fbc33777619b00000000', 'hex')
     // difficalty  acd56618
 
-    const ret = await contract.Verify.call(dataHash, nonce, soln);
+    const ret = await contract.VerifyBeamPow.call(dataHash, nonce, soln);
     assert.equal(ret, true, 'output mismatch');
-    console.log('Gas usage (verify valid pow)', await contract.Verify.estimateGas(dataHash, nonce, soln))
+    console.log('Gas usage (verify valid pow)', await contract.VerifyBeamPow.estimateGas(dataHash, nonce, soln))
   })
 
   it('invalid pow', async () => {
@@ -106,7 +133,7 @@ contract('CultivationTest', function (accounts) {
     const soln = Buffer.from('188306068af692bdd9d40355eeca8640005aa7ff65b61a85b45fc70a8a2ac127db2d90c4fc397643a5d98f3e644f9f59fcf9677a0da2e90f597f61a1bf17d67512c6d57e680d0aa2642f7d275d2700188dbf8b43fac5c88fa08fa270e8d8fbc33777619b00000000', 'hex')
     // difficalty  acd56618
 
-    const ret = await contract.Verify.call(dataHash, nonce, soln);
+    const ret = await contract.VerifyBeamPow.call(dataHash, nonce, soln);
     assert.equal(ret, false, 'output mismatch');
   })
 
