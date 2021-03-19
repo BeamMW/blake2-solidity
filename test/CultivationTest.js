@@ -49,7 +49,7 @@ contract('CultivationTest', function (accounts) {
     console.log('Gas usage (block header validation)', await contract.isHeaderValid.estimateGas(height, prev, chainWork, kernels, definition, timestamp, pow))
   })
 
-  /*it('random string', async () => {
+  it('random string', async () => {
     const dataString = 'That is one small step for a man, one giant leap for mankind'
 
     const dataBuffer = Buffer.from(dataString)
@@ -93,7 +93,7 @@ contract('CultivationTest', function (accounts) {
     const ret = await contract.equihashTestN200K9.call()
     assert.equal(ret.toString(), '14394687529728284581040569373478606499820061758322408099941575726000591405977', 'output mismatch')
     console.log('Gas usage', await contract.equihashTestN200K9.estimateGas())
-  })*/
+  })
 
   it('siphash 1', async () => {
     const ret = await contract.siphash24.call(1, 1, 1, 1, 5)

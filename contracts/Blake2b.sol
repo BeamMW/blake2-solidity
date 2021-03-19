@@ -29,7 +29,7 @@ library Blake2b {
     }
 
     // Initialise the state with a given `key` and required `out_len` hash length.
-    function init(bytes memory key, uint out_len)
+    function init(bytes memory key, uint out_len, bytes memory personalization)
         internal
         view
         returns (Instance memory instance)
@@ -40,11 +40,11 @@ library Blake2b {
         //    if eq(extcodehash(0x09), 0) { revert(0, 0) }
         //}
 
-        reset(instance, key, out_len);
+        reset(instance, key, out_len, personalization);
     }
 
     // Initialise the state with a given `key` and required `out_len` hash length.
-    function reset(Instance memory instance, bytes memory key, uint out_len)
+    function reset(Instance memory instance, bytes memory key, uint out_len, bytes memory personalization)
         internal
         view
     {
@@ -69,17 +69,17 @@ library Blake2b {
         }
 
         // TODO: support salt and personalization
-        // Beam blake2b personalization!
-        // zero padded to 32 bytes
-        bytes memory personalization = hex"4265616d2d506f57c00100000500000000000000000000000000000000000000";
+        if (personalization.length > 0) {
+            require(personalization.length == 32);
 
-        assembly {
-            let ptr := add(state, 84) // 32+4+48
-            let tmp := mload(ptr)
-            let personalization_ptr := add(personalization, 32)
-            let tmp_personalization := mload(personalization_ptr)
-            tmp := xor(tmp, tmp_personalization)
-            mstore(ptr, tmp)
+            assembly {
+                let ptr := add(state, 84) // 32+4+48
+                let tmp := mload(ptr)
+                let personalization_ptr := add(personalization, 32)
+                let tmp_personalization := mload(personalization_ptr)
+                tmp := xor(tmp, tmp_personalization)
+                mstore(ptr, tmp)
+            }
         }
 
         if (key_len > 0) {

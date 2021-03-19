@@ -53,6 +53,9 @@ library BeamHashIII {
 
     uint32 constant kColisionBitSize = 24;
     uint32 constant kWorkBitSize = 448;
+    // Beam blake2b personalization!
+    // zero padded to 32 bytes
+    bytes constant personalization = hex"4265616d2d506f57c00100000500000000000000000000000000000000000000";
 
     function Verify(bytes memory dataHash, bytes memory nonce, bytes memory soln)
         internal
@@ -76,7 +79,7 @@ library BeamHashIII {
             ind++;
         }
 
-        Blake2b.Instance memory instance = Blake2b.init(hex"", 32);
+        Blake2b.Instance memory instance = Blake2b.init(hex"", 32, personalization);
         bytes memory tmp = instance.finalize(buffer, dataHash.length + nonce.length + 4);
         uint64 state0 = StepElem.toUint64(tmp, 0);
         uint64 state1 = StepElem.toUint64(tmp, 8);
