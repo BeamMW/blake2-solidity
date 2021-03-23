@@ -18,7 +18,7 @@ contract PipeUser {
     }
 
     function proccessMessage(address receiver) public {
-        uint256 value = Pipe(m_pipeAddress).getMessage(receiver);
+        uint256 value = Pipe(m_pipeAddress).getRemoteMessage(receiver);
 
         IERC20(m_beamToken).safeTransfer(receiver, value);
     }
@@ -26,6 +26,6 @@ contract PipeUser {
     function lock(address receiver, uint256 value) public {
         IERC20(m_beamToken).safeTransferFrom(msg.sender, address(this), value);
 
-        Pipe(m_pipeAddress).createMessage(receiver, value);
+        Pipe(m_pipeAddress).pushLocalMessage(receiver, value);
     }
 }

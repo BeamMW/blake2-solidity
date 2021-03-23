@@ -2,6 +2,7 @@
 pragma solidity ^0.7.0;
 
 import "./BeamHashIII.sol";
+import "./BeamUtils.sol";
 
 library BeamHeader {
     struct PoW {
@@ -89,33 +90,21 @@ library BeamHeader {
         return 0xed91a717313c6eb0e3f082411584d0da8f0c8af2a4ac01e5af1959e0ec4338bc;
     }
 
-    function encodeUint(uint value)
-        private
-        pure
-        returns (bytes memory)
-    {
-        bytes memory encoded;
-        for (; value >= 0x80; value >>= 7) {
-            encoded = abi.encodePacked(encoded, uint8(uint8(value) | 0x80));
-        }
-        return abi.encodePacked(encoded, uint8(value));
-    }
-
     function encodeState(SystemState memory state, bool total)
         private
         pure
         returns (bytes memory)
     {
         bytes memory prefix = abi.encodePacked(
-            encodeUint(state.height),
+            BeamUtils.encodeUint(state.height),
             state.prev,
             state.chainWork
         );
         bytes memory element = abi.encodePacked(
             state.kernels,
             state.definition,
-            encodeUint(state.timestamp),
-            encodeUint(state.pow.difficulty)
+            BeamUtils.encodeUint(state.timestamp),
+            BeamUtils.encodeUint(state.pow.difficulty)
         );
         bytes memory encoded = abi.encodePacked(prefix, element);
 
