@@ -31,18 +31,25 @@ library StepElem {
         pure
         returns (uint64)
     {
-        bytes memory tmp = new bytes(8);
-
-        for(uint8 i = 0; i < 8; i++) {
-            tmp[i] = buffer[start + 7 - i];
-        }
-
-        uint64 value = 0;
+        uint64 v = 0;
+        start += 8;
         assembly {
-            value := mload(add(tmp, 8))
+            v := mload(add(buffer, start))
         }
 
-        return value;
+        // reverse uint64:
+        // swap bytes
+        v = ((v & 0xFF00FF00FF00FF00) >> 8) |
+            ((v & 0x00FF00FF00FF00FF) << 8);
+
+        // swap 2-byte long pairs
+        v = ((v & 0xFFFF0000FFFF0000) >> 16) |
+            ((v & 0x0000FFFF0000FFFF) << 16);
+
+        // swap 4-byte long pairs
+        v = (v >> 32) | (v << 32);
+
+        return v;
     }
 
     function mergeWith(Instance memory self, Instance memory other, uint32 remLen)
@@ -57,8 +64,9 @@ library StepElem {
         bytes memory buffer = new bytes(7 * 8);
 
         // copy to buffer
+        bytes8 value = 0;
         for (uint16 i = 0; i < 7; i++) {
-            bytes8 value = bytes8(self.workWords[i]);
+            value = bytes8(self.workWords[i]);
 
             // revert bytes
             for (uint16 j = 0; j < 8; j++) {
@@ -77,9 +85,7 @@ library StepElem {
 
         // copy from buffer
         for (uint16 i = 0; i < 7; i++) {
-            uint32 start = i * 8;
-            uint64 parsed = toUint64(buffer, start);
-            self.workWords[i] = parsed;
+            self.workWords[i] = toUint64(buffer, i * 8);
         }
     }
 
