@@ -62,21 +62,6 @@ contract Pipe {
         // validate block header & proof of msg
     }
 
-    function getContractVariableHash2(bytes32 contractId, uint8 keyTag, bytes memory key, bytes32 value)
-        public
-        pure
-        returns (bytes memory)
-    {
-        // full key of variable of beam pipe contract: [ContractID][tag][key]
-        bytes memory fullKeyEncoded = abi.encodePacked(
-            contractId,
-            BeamUtils.encodeUint(keyTag),
-            key
-        );
-
-        return BeamUtils.getContractVariableHash(fullKeyEncoded, abi.encodePacked(value));
-    }
-
     function getRemoteMessage(address receiver)
         public
         returns (uint256)
