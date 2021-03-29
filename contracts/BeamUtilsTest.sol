@@ -3,6 +3,7 @@ pragma solidity ^0.7.0;
 
 import "./BeamUtils.sol";
 import "./BeamHeader.sol";
+import "./BeamDifficulty.sol";
 
 contract BeamUtilsTest {
     function getContractVariableHash(bytes32 contractId, uint8 keyTag, bytes memory key, bytes32 value)
@@ -45,12 +46,13 @@ contract BeamUtilsTest {
         bytes32 definition,
         uint64 timestamp,
         bytes memory pow,
+        bytes32 rulesHash,
         // variable's params
         bytes memory key,
         bytes memory value,
         bytes memory proof
     ) public view returns (bool) {
-        require(BeamHeader.isValid(height, prev, chainWork, kernels, definition, timestamp, pow), 'invalid header.');
+        require(BeamHeader.isValid(height, prev, chainWork, kernels, definition, timestamp, pow, rulesHash), 'invalid header.');
 
         bytes32 variableHash = BeamUtils.getContractVariableHash(key, abi.encodePacked(value));
         bytes32 rootHash = BeamUtils.interpretMerkleProof(variableHash, proof);
@@ -63,7 +65,7 @@ contract BeamUtilsTest {
         pure
         returns (bytes32 r0, bytes32 r1)
     {
-        (r0, r1) = BeamUtils.mul512(a, b);
+        (r0, r1) = BeamDifficulty.mul512(a, b);
     }
 
     function isDifficultyTargetReached(uint256 rawDifficulty, uint256 target)
@@ -71,6 +73,14 @@ contract BeamUtilsTest {
         pure
         returns (bool)
     {
-        return BeamUtils.isDifficultyTargetReached(rawDifficulty, target);
+        return BeamDifficulty.isTargetReached(rawDifficulty, target);
+    }
+
+    function testDifficultyUnpack(uint32 packed)
+        public
+        pure
+        returns (bytes32)
+    {
+        return bytes32(BeamDifficulty.unpack(packed));
     }
 }

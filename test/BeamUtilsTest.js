@@ -40,6 +40,8 @@ contract('BeamUtilsTest', function(accounts) {
         const definition = Buffer.from('b2522cd2efe3c846533c955bf4dbe20aed96807b2d6652426fff98e7dd93e977', 'hex');
         const timestamp = 1616837602;
         const pow = Buffer.from('0fe131d22c337f6552ca35cb0ed17f438398a01a4ac041b88309503e22535be5abadb25645fe8eedc5edd2d36d66db28f8e5bf57a33c20461ad0b945a967ecc0cfee2f5036f2e261207afe6920a824f5cb8652af1a81648c29c05d42bcbd8b3cfdd485fbe9af975ad8a6ed385c83f53f2b127708', 'hex');
+        // fork3, masternet rules
+        const rulesHash = Buffer.from('74419f5c71176cf69393af4b0ca53561c46b2f87ec324a7b689163be749528dd', 'hex');
 
         // Beam pipe OutCheckpoint key:
         // [contract_id,KeyTag::Internal(uint8 0),KeyType::OutCheckpoint(uint8 2),index_BE(uint32 0)]
@@ -47,7 +49,7 @@ contract('BeamUtilsTest', function(accounts) {
         const value = Buffer.from('99bdbad82c62444a2755efb0139eb550ef0fb42e3955ff45c3ab5ae8b0354a76', 'hex');
         const proof = Buffer.from('019d18796219317ccf50a8dc0f14c799ffab04bfdeb597a23708549269961f10500091a8efc0bea76a0b0a394a7fba8ddefde3fa5458cfb3f51762345128e37bd9a401a21893307dfd35d46d3ae469d7562e02db411ead49cd67e79e0f8b150a2c1e3801b0f63b8ec26716494705761f7df3015982c98959841b85b96efc6142ca6355f800748d5e4bf948f93e2908fc65fe9dd5677b86d9c51d7c4c98d9c385608aa5d17f00237f08f9e288ce829bbb321d66fceb2912e4b00b92b78c9b1019324041e5a6980184152fdd431e172c6b851a3c15471a3977f6a8bd8135a1a4e59066b06ff2cc2d00217f3dd89db59328ff065efb3baf2876ad8544006f4129230a7417c40d330cfc', 'hex');
 
-        const ret = await contract.validateVariable.call(height, prevHash, chainWork, kernels, definition, timestamp, pow, key, value, proof);
+        const ret = await contract.validateVariable.call(height, prevHash, chainWork, kernels, definition, timestamp, pow, rulesHash, key, value, proof);
         assert.equal(ret, true, 'output mismatch');
     })
 
@@ -97,6 +99,19 @@ contract('BeamUtilsTest', function(accounts) {
 
             const ret = await contract.isDifficultyTargetReached.call(rawDifficulty, target);
             assert.equal(ret, false, 'output mismatch');
+        }
+    })
+
+    it('testDifficultyUnpack', async () => {
+        {
+            const packed = 2344718188;
+            const ret = await contract.testDifficultyUnpack.call(packed);
+            assert.equal(ret, '0x00000000000000000000000e0c7b600000000000000000000000000000000000');
+        }
+        {
+            const packed = 2910480486;
+            const ret = await contract.testDifficultyUnpack.call(packed);
+            assert.equal(ret, '0x000000000000002f4d0cc0000000000000000000000000000000000000000000');
         }
     })
 })

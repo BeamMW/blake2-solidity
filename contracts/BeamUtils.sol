@@ -55,33 +55,4 @@ library BeamUtils {
             }
         }
     }
-
-    function mul512(uint256 a, uint256 b)
-        internal
-        pure
-        returns (bytes32 r0, bytes32 r1)
-    {
-        assembly {
-            let mm := mulmod(a, b, not(0))
-            r0 := mul(a,b)
-            r1 := sub(sub(mm, r0), lt(mm, r0))
-        }
-    }
-
-    function isDifficultyTargetReached(uint256 rawDifficulty, uint256 target)
-        internal
-        pure
-        returns (bool)
-    {
-        (, bytes32 hightHalf) = mul512(rawDifficulty, target);
-
-        // difficulty.length - (MantissaBits >> 3) = 32 - (24 >> 3) = 29
-        uint8 n = 29;
-        for (uint16 i = 0; i < n; i++) {
-            if (hightHalf[i] != 0) {
-                return false;
-            }
-        }
-        return true;
-    }
 }

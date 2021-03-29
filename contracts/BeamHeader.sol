@@ -3,6 +3,7 @@ pragma solidity ^0.7.0;
 
 import "./BeamHashIII.sol";
 import "./BeamUtils.sol";
+import "./BeamDifficulty.sol";
 
 library BeamHeader {
     struct PoW {
@@ -90,7 +91,7 @@ library BeamHeader {
         return 0xed91a717313c6eb0e3f082411584d0da8f0c8af2a4ac01e5af1959e0ec4338bc;
     }
 
-    function encodeState(SystemState memory state, bool total)
+    function encodeState(SystemState memory state, bool total, bytes32 rulesHash)
         private
         pure
         returns (bytes memory)
@@ -107,11 +108,8 @@ library BeamHeader {
             BeamUtils.encodeUint(state.pow.difficulty)
         );
         bytes memory encoded = abi.encodePacked(prefix, element);
-
-        uint8 iFork = findFork(state.height);
-        if (iFork >= 2) {
-            encoded = abi.encodePacked(encoded, getForkHash(iFork));
-        }
+        // support only fork2 and higher
+        encoded = abi.encodePacked(encoded, rulesHash);
 
         if (total) {
             encoded = abi.encodePacked(
@@ -124,12 +122,12 @@ library BeamHeader {
         return encoded;
     }
 
-    function getHashInternal(SystemState memory state, bool total)
+    function getHashInternal(SystemState memory state, bool total, bytes32 rulesHash)
         private
         pure
         returns (bytes memory)
     {
-        bytes memory encodedState = encodeState(state, total);
+        bytes memory encodedState = encodeState(state, total, rulesHash);
         return abi.encodePacked(sha256(encodedState));
     }
 
@@ -140,7 +138,8 @@ library BeamHeader {
         bytes32 kernels,
         bytes32 definition,
         uint64 timestamp,
-        bytes memory pow
+        bytes memory pow,
+        bytes32 rulesHash
     ) internal view returns (bool) {
         SystemState memory state = compileState(
             height,
@@ -152,10 +151,14 @@ library BeamHeader {
             pow
         );
 
-        //  TODO: check difficulty
+        // checking difficulty
+        uint256 rawDifficulty = BeamDifficulty.unpack(state.pow.difficulty);
+        uint256 target = uint256(sha256(abi.encodePacked(state.pow.indicies)));
+        if (!BeamDifficulty.isTargetReached(rawDifficulty, target))
+            return false;
 
         // get pre-pow
-        bytes memory prepowHash = getHashInternal(state, false);
+        bytes memory prepowHash = getHashInternal(state, false, rulesHash);
 
         return BeamHashIII.Verify(prepowHash, state.pow.nonce, state.pow.indicies);
     }
@@ -168,7 +171,8 @@ library BeamHeader {
         bytes32 definition,
         uint64 timestamp,
         bytes memory pow,
-        bool total
+        bool total,
+        bytes32 rulesHash
     ) internal pure returns (bytes memory) {
         SystemState memory state = compileState(
             height,
@@ -180,6 +184,6 @@ library BeamHeader {
             pow
         );
 
-        return getHashInternal(state, total);
+        return getHashInternal(state, total, rulesHash);
     }
 }

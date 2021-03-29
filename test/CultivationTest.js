@@ -17,8 +17,10 @@ contract('CultivationTest', function (accounts) {
     const definition = Buffer.from('da1cf1a333d3e8b0d44e4c0c167df7bf604b55352e5bca3bc67dfd350fb707e9', 'hex')
     const timestamp = 1600968920
     const pow = Buffer.from('188306068af692bdd9d40355eeca8640005aa7ff65b61a85b45fc70a8a2ac127db2d90c4fc397643a5d98f3e644f9f59fcf9677a0da2e90f597f61a1bf17d67512c6d57e680d0aa2642f7d275d2700188dbf8b43fac5c88fa08fa270e8d8fbc33777619b00000000ad636476f7117400acd56618', 'hex')
+    // fork2, mainnet rules
+    const rulesHash = Buffer.from('1ce8f721bf0c9fa7473795a97e365ad38bbc539aab821d6912d86f24e67720fc', 'hex')
 
-    const ret = await contract.getHeaderHash.call(height, prev, chainWork, kernels, definition, timestamp, pow, true)
+    const ret = await contract.getHeaderHash.call(height, prev, chainWork, kernels, definition, timestamp, pow, true, rulesHash)
     assert.equal(ret, '0x23fe8673db74c43d4933b1f2d16db11b1a4895e3924a2f9caf92afa89fd01faf', 'hash mismatch')
   })
 
@@ -30,8 +32,10 @@ contract('CultivationTest', function (accounts) {
     const definition = Buffer.from('da1cf1a333d3e8b0d44e4c0c167df7bf604b55352e5bca3bc67dfd350fb707e9', 'hex')
     const timestamp = 1600968920
     const pow = Buffer.from('188306068af692bdd9d40355eeca8640005aa7ff65b61a85b45fc70a8a2ac127db2d90c4fc397643a5d98f3e644f9f59fcf9677a0da2e90f597f61a1bf17d67512c6d57e680d0aa2642f7d275d2700188dbf8b43fac5c88fa08fa270e8d8fbc33777619b00000000ad636476f7117400acd56618', 'hex')
+    // fork2, mainnet rules
+    const rulesHash = Buffer.from('1ce8f721bf0c9fa7473795a97e365ad38bbc539aab821d6912d86f24e67720fc', 'hex')
 
-    const ret = await contract.getHeaderHash.call(height, prev, chainWork, kernels, definition, timestamp, pow, false)
+    const ret = await contract.getHeaderHash.call(height, prev, chainWork, kernels, definition, timestamp, pow, false, rulesHash)
     assert.equal(ret, '0xa05ea9b3dd329bbf3e8ef68415eae102021f1d9a995d4a727cb3e307e5d17321', 'hash mismatch')
   })
 
@@ -43,10 +47,12 @@ contract('CultivationTest', function (accounts) {
     const definition = Buffer.from('da1cf1a333d3e8b0d44e4c0c167df7bf604b55352e5bca3bc67dfd350fb707e9', 'hex')
     const timestamp = 1600968920
     const pow = Buffer.from('188306068af692bdd9d40355eeca8640005aa7ff65b61a85b45fc70a8a2ac127db2d90c4fc397643a5d98f3e644f9f59fcf9677a0da2e90f597f61a1bf17d67512c6d57e680d0aa2642f7d275d2700188dbf8b43fac5c88fa08fa270e8d8fbc33777619b00000000ad636476f7117400acd56618', 'hex')
+    // fork2, mainnet rules
+    const rulesHash = Buffer.from('1ce8f721bf0c9fa7473795a97e365ad38bbc539aab821d6912d86f24e67720fc', 'hex')
 
-    const ret = await contract.isHeaderValid.call(height, prev, chainWork, kernels, definition, timestamp, pow)
+    const ret = await contract.isHeaderValid.call(height, prev, chainWork, kernels, definition, timestamp, pow, rulesHash)
     assert.equal(ret, true, 'output mismatch');
-    console.log('Gas usage (block header validation)', await contract.isHeaderValid.estimateGas(height, prev, chainWork, kernels, definition, timestamp, pow))
+    console.log('Gas usage (block header validation)', await contract.isHeaderValid.estimateGas(height, prev, chainWork, kernels, definition, timestamp, pow, rulesHash))
   })
 
   it('random string', async () => {

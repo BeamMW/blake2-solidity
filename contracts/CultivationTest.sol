@@ -18,7 +18,8 @@ contract CultivationTest {
         bytes32 definition,
         uint64 timestamp,
         bytes memory pow,
-        bool full
+        bool full,
+        bytes32 rulesHash
     ) public pure returns (bytes memory) {
         return BeamHeader.getHeaderHashInternal(
             height,
@@ -28,7 +29,8 @@ contract CultivationTest {
             definition,
             timestamp,
             pow,
-            full
+            full,
+            rulesHash
         );
     }
 
@@ -39,9 +41,10 @@ contract CultivationTest {
         bytes32 kernels,
         bytes32 definition,
         uint64 timestamp,
-        bytes memory pow
+        bytes memory pow,
+        bytes32 rulesHash
     ) public view returns (bool) {
-        return BeamHeader.isValid(height, prev, chainWork, kernels, definition, timestamp, pow);
+        return BeamHeader.isValid(height, prev, chainWork, kernels, definition, timestamp, pow, rulesHash);
     }
 
     function testOneBlock(bytes memory input, uint256 input_len)
