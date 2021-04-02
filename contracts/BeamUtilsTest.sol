@@ -39,11 +39,11 @@ contract BeamUtilsTest {
 
     function validateVariable(
         // params of block
-        uint64 height,
         bytes32 prev,
         bytes32 chainWork,
         bytes32 kernels,
         bytes32 definition,
+        uint64 height,
         uint64 timestamp,
         bytes memory pow,
         bytes32 rulesHash,
@@ -52,9 +52,9 @@ contract BeamUtilsTest {
         bytes memory value,
         bytes memory proof
     ) public view returns (bool) {
-        require(BeamHeader.isValid(height, prev, chainWork, kernels, definition, timestamp, pow, rulesHash), 'invalid header.');
+        require(BeamHeader.isValid(prev, chainWork, kernels, definition, height, timestamp, pow, rulesHash), 'invalid header.');
 
-        bytes32 variableHash = BeamUtils.getContractVariableHash(key, abi.encodePacked(value));
+        bytes32 variableHash = BeamUtils.getContractVariableHash(key, value);
         bytes32 rootHash = BeamUtils.interpretMerkleProof(variableHash, proof);
 
         return rootHash == definition;

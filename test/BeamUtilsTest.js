@@ -16,10 +16,10 @@ contract('BeamUtilsTest', function(accounts) {
       })
 
     it('getContractVariableHash2', async () => {
-    const key = Buffer.from('7965a18aefaf3050ccd404482eb919f6641daaf111c7c4a7787c2e932942aa9100e1616f165a01e6e6b20df03d7de98e0dee149cf8b0ecf594582ea9bd037102050000000000', 'hex');
-    const value = Buffer.from('00ab904100000000', 'hex');
-    const ret = await contract.getContractVariableHash2.call(key, value);
-    assert.equal(ret, '0xe58afb5015ced46149b90f9b523b7f342311bfdc24759186363dacaf90412519', 'hash mismatch');
+        const key = Buffer.from('7965a18aefaf3050ccd404482eb919f6641daaf111c7c4a7787c2e932942aa9100e1616f165a01e6e6b20df03d7de98e0dee149cf8b0ecf594582ea9bd037102050000000000', 'hex');
+        const value = Buffer.from('00ab904100000000', 'hex');
+        const ret = await contract.getContractVariableHash2.call(key, value);
+        assert.equal(ret, '0xe58afb5015ced46149b90f9b523b7f342311bfdc24759186363dacaf90412519', 'hash mismatch');
     })
 
     it('interpretMerkleProof', async() => {
@@ -49,8 +49,10 @@ contract('BeamUtilsTest', function(accounts) {
         const value = Buffer.from('99bdbad82c62444a2755efb0139eb550ef0fb42e3955ff45c3ab5ae8b0354a76', 'hex');
         const proof = Buffer.from('019d18796219317ccf50a8dc0f14c799ffab04bfdeb597a23708549269961f10500091a8efc0bea76a0b0a394a7fba8ddefde3fa5458cfb3f51762345128e37bd9a401a21893307dfd35d46d3ae469d7562e02db411ead49cd67e79e0f8b150a2c1e3801b0f63b8ec26716494705761f7df3015982c98959841b85b96efc6142ca6355f800748d5e4bf948f93e2908fc65fe9dd5677b86d9c51d7c4c98d9c385608aa5d17f00237f08f9e288ce829bbb321d66fceb2912e4b00b92b78c9b1019324041e5a6980184152fdd431e172c6b851a3c15471a3977f6a8bd8135a1a4e59066b06ff2cc2d00217f3dd89db59328ff065efb3baf2876ad8544006f4129230a7417c40d330cfc', 'hex');
 
-        const ret = await contract.validateVariable.call(height, prevHash, chainWork, kernels, definition, timestamp, pow, rulesHash, key, value, proof);
+        const ret = await contract.validateVariable.call(prevHash, chainWork, kernels, definition, height, timestamp, pow, rulesHash, key, value, proof);
         assert.equal(ret, true, 'output mismatch');
+
+        console.log('Gas usage validateVariable', await contract.validateVariable.estimateGas(prevHash, chainWork, kernels, definition, height, timestamp, pow, rulesHash, key, value, proof));
     })
 
     it('testMul512', async () => {

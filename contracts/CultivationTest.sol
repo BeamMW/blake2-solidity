@@ -11,22 +11,22 @@ contract CultivationTest {
     using StepElem for StepElem.Instance;
 
     function getHeaderHash(
-        uint64 height,
         bytes32 prev,
         bytes32 chainWork,
         bytes32 kernels,
         bytes32 definition,
+        uint64 height,
         uint64 timestamp,
         bytes memory pow,
         bool full,
         bytes32 rulesHash
-    ) public pure returns (bytes memory) {
+    ) public pure returns (bytes32) {
         return BeamHeader.getHeaderHashInternal(
-            height,
             prev,
             chainWork,
             kernels,
             definition,
+            height,
             timestamp,
             pow,
             full,
@@ -35,16 +35,16 @@ contract CultivationTest {
     }
 
     function isHeaderValid(
-        uint64 height,
         bytes32 prev,
         bytes32 chainWork,
         bytes32 kernels,
         bytes32 definition,
+        uint64 height,
         uint64 timestamp,
         bytes memory pow,
         bytes32 rulesHash
     ) public view returns (bool) {
-        return BeamHeader.isValid(height, prev, chainWork, kernels, definition, timestamp, pow, rulesHash);
+        return BeamHeader.isValid(prev, chainWork, kernels, definition, height, timestamp, pow, rulesHash);
     }
 
     function testOneBlock(bytes memory input, uint256 input_len)
@@ -116,7 +116,7 @@ contract CultivationTest {
         return SipHash.siphash24(state0, state1, state2, state3, nonce);
     }
 
-    function VerifyBeamPow(bytes memory dataHash, bytes memory nonce, bytes memory soln)
+    function VerifyBeamPow(bytes32 dataHash, bytes8 nonce, bytes memory soln)
         public
         view
         returns (bool)

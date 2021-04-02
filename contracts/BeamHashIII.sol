@@ -31,10 +31,11 @@ library BeamHashIII {
         uint8 index = 0;
 
         uint32[32] memory ret;
+        uint32 tmp;
         // check size of soln
-        for (uint8 i = 0; i < 100; i++)
+        for (uint i = 0; i < 100; i++)
         {
-            uint32 tmp = uint8(soln[i]);
+            tmp = uint8(soln[i]);
             tmp <<= currentSize;
             buffer |= tmp;
             currentSize += 8;
@@ -57,26 +58,27 @@ library BeamHashIII {
     // zero padded to 32 bytes
     bytes constant personalization = hex"4265616d2d506f57c00100000500000000000000000000000000000000000000";
 
-    function Verify(bytes memory dataHash, bytes memory nonce, bytes memory soln)
+    function Verify(bytes32 dataHash, bytes8 nonce, bytes memory indicesRaw)
         internal
         view
         returns (bool)
     {
+        require(indicesRaw.length == 104, "BeamHashIII: unexpected size of soln.");
         bytes memory buffer = new bytes(128);
+        {
+            bytes4 temp;
+            assembly {
+                // save hash to buffer
+                mstore(add(buffer, 32), dataHash)
+                // save nonce to buffer
+                mstore(add(buffer, 64), nonce)
 
-        // TODO it's bad code. need change it
-        uint16 ind = 0;
-        for (uint16 i = 0; i < dataHash.length; i++) {
-            buffer[ind] = dataHash[i];
-            ind++;
-        }
-        for (uint16 i = 0; i < nonce.length; i++) {
-            buffer[ind] = nonce[i];
-            ind++;
-        }
-        for (uint16 i = 0; i < 4; i++) {
-            buffer[ind] = soln[100 + i];
-            ind++;
+                // load additional 4 bytes from indicesRaw:
+                // get last 32 bytes and shift left 28 bytes
+                temp := shl(224, mload(add(indicesRaw, 104)))
+                // save to buffer, offset: 32 + 32 + 8 = 72
+                mstore(add(buffer, 72), temp)
+            }
         }
 
         Blake2b.Instance memory instance = Blake2b.init(hex"", 32, personalization);
@@ -85,23 +87,24 @@ library BeamHashIII {
         uint64 state1 = StepElem.toUint64(tmp, 8);
         uint64 state2 = StepElem.toUint64(tmp, 16);
         uint64 state3 = StepElem.toUint64(tmp, 24);
-        uint32[32] memory indices = indexDecoder(soln);
+        uint32[32] memory indices = indexDecoder(indicesRaw);
 
         StepElem.Instance[32] memory elemLite;
-        for (uint8 i = 0; i < elemLite.length; i++)
+        for (uint i = 0; i < elemLite.length; i++)
         {
             elemLite[i] = StepElem.init(state0, state1, state2, state3, indices[i]);
         }
-
-        uint32 round = 1;
-        for (uint32 step = 1; step < indices.length; step <<= 1) {
-            for (uint32 i0 = 0; i0 < indices.length;) {
-                uint32 remLen = kWorkBitSize - (round - 1) * kColisionBitSize;
+ 
+        uint round = 1;
+        uint i1;
+        for (uint step = 1; step < indices.length; step <<= 1) {
+            for (uint i0 = 0; i0 < indices.length;) {
+                uint remLen = kWorkBitSize - (round - 1) * kColisionBitSize;
 
                 if (round == 5) remLen -= 64;
 
                 elemLite[i0].applyMix(remLen, indices, i0, step);
-                uint32 i1 = i0 + step;
+                i1 = i0 + step;
                 elemLite[i1].applyMix(remLen, indices, i1, step);
 
                 if (!elemLite[i0].hasColision(elemLite[i1]))
@@ -121,14 +124,14 @@ library BeamHashIII {
             round++;
         }
 
-        for (uint8 j = 0; j < elemLite[0].workWords.length; j++) {
+        for (uint j = 0; j < elemLite[0].workWords.length; j++) {
             if (elemLite[0].workWords[j] != 0)
                 return false;
         }
 
         // ensure all the indices are distinct
-        for (uint8 i = 0; i < indices.length - 1; i++) {
-            for (uint8 j = i + 1; j < indices.length; j++) {
+        for (uint i = 0; i < indices.length - 1; i++) {
+            for (uint j = i + 1; j < indices.length; j++) {
                 if (indices[i] == indices[j])
                     return false;
             }

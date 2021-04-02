@@ -55,4 +55,19 @@ library BeamUtils {
             }
         }
     }
+
+    function reverse32(uint32 value)
+        internal
+        pure
+        returns (uint32)
+    {
+        // swap bytes
+        value = ((value & 0xFF00FF00) >> 8) |
+                ((value & 0x00FF00FF) << 8);
+
+        // swap 2-byte long pairs
+        value = (value >> 16) | (value << 16);
+
+        return value;
+    }
 }

@@ -8,7 +8,7 @@ import "./BeamDifficulty.sol";
 library BeamHeader {
     struct PoW {
         bytes indicies;
-        bytes nonce;
+        bytes8 nonce;
         uint32 difficulty;
     }
 
@@ -22,37 +22,45 @@ library BeamHeader {
         PoW pow;
     }
 
-    // TODO: Rewrite using assembly mload?
     function exactPoW(bytes memory raw)
         private
         pure
         returns (PoW memory pow)
     {
         uint32 nSolutionBytes = 104;
-        uint32 nNonceBytes = 8;
-        pow.indicies = new bytes(nSolutionBytes);
-        pow.nonce = new bytes(nNonceBytes);
+        require(raw.length >= nSolutionBytes + 8 + 4, "unexpected rawPoW length!");
+        bytes memory indicies = new bytes(nSolutionBytes);
 
-        uint32 index = 0;
-        for (uint32 i = 0; i < nSolutionBytes; i++) {
-            pow.indicies[i] = raw[index++];
+        assembly {
+            mstore(add(indicies, 32), mload(add(raw, 32)))
+            mstore(add(indicies, 64), mload(add(raw, 64)))
+            mstore(add(indicies, 96), mload(add(raw, 96)))
+            mstore(add(indicies, 128), mload(add(raw, 128)))
+
+            // load last 8 bytes
+            mstore(add(indicies, 104), mload(add(raw, 104)))
         }
-        for (uint32 i = 0; i < nNonceBytes; i++) {
-            pow.nonce[i] = raw[index++];
+        pow.indicies = indicies;
+
+        bytes8 nonce;
+        assembly {
+            nonce := shl(192, mload(add(raw, 112)))
         }
-        for (uint32 i = 0; i < 4; i++) {
-            uint32 temp = uint32(uint8(raw[index++]));
-            temp <<= 8 * i;
-            pow.difficulty ^= temp;
+        pow.nonce = nonce;
+
+        bytes4 diff;
+        assembly {
+            diff := shl(224, mload(add(raw, 116)))
         }
+        pow.difficulty = BeamUtils.reverse32(uint32(diff));
     }
 
     function compileState(
-        uint64 height,
         bytes32 prev,
         bytes32 chainWork,
         bytes32 kernels,
         bytes32 definition,
+        uint64 height,
         uint64 timestamp,
         bytes memory pow
     ) private pure returns (SystemState memory state) {
@@ -125,28 +133,28 @@ library BeamHeader {
     function getHashInternal(SystemState memory state, bool total, bytes32 rulesHash)
         private
         pure
-        returns (bytes memory)
+        returns (bytes32)
     {
         bytes memory encodedState = encodeState(state, total, rulesHash);
-        return abi.encodePacked(sha256(encodedState));
+        return sha256(encodedState);
     }
 
     function isValid(
-        uint64 height,
         bytes32 prev,
         bytes32 chainWork,
         bytes32 kernels,
         bytes32 definition,
+        uint64 height,
         uint64 timestamp,
         bytes memory pow,
         bytes32 rulesHash
     ) internal view returns (bool) {
         SystemState memory state = compileState(
-            height,
             prev,
             chainWork,
             kernels,
             definition,
+            height,
             timestamp,
             pow
         );
@@ -158,28 +166,28 @@ library BeamHeader {
             return false;
 
         // get pre-pow
-        bytes memory prepowHash = getHashInternal(state, false, rulesHash);
+        bytes32 prepowHash = getHashInternal(state, false, rulesHash);
 
         return BeamHashIII.Verify(prepowHash, state.pow.nonce, state.pow.indicies);
     }
 
     function getHeaderHashInternal(
-        uint64 height,
         bytes32 prev,
         bytes32 chainWork,
         bytes32 kernels,
         bytes32 definition,
+        uint64 height,
         uint64 timestamp,
         bytes memory pow,
         bool total,
         bytes32 rulesHash
-    ) internal pure returns (bytes memory) {
+    ) internal pure returns (bytes32) {
         SystemState memory state = compileState(
-            height,
             prev,
             chainWork,
             kernels,
             definition,
+            height,
             timestamp,
             pow
         );

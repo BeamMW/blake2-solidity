@@ -20,7 +20,7 @@ contract('CultivationTest', function (accounts) {
     // fork2, mainnet rules
     const rulesHash = Buffer.from('1ce8f721bf0c9fa7473795a97e365ad38bbc539aab821d6912d86f24e67720fc', 'hex')
 
-    const ret = await contract.getHeaderHash.call(height, prev, chainWork, kernels, definition, timestamp, pow, true, rulesHash)
+    const ret = await contract.getHeaderHash.call(prev, chainWork, kernels, definition, height, timestamp, pow, true, rulesHash)
     assert.equal(ret, '0x23fe8673db74c43d4933b1f2d16db11b1a4895e3924a2f9caf92afa89fd01faf', 'hash mismatch')
   })
 
@@ -35,7 +35,7 @@ contract('CultivationTest', function (accounts) {
     // fork2, mainnet rules
     const rulesHash = Buffer.from('1ce8f721bf0c9fa7473795a97e365ad38bbc539aab821d6912d86f24e67720fc', 'hex')
 
-    const ret = await contract.getHeaderHash.call(height, prev, chainWork, kernels, definition, timestamp, pow, false, rulesHash)
+    const ret = await contract.getHeaderHash.call(prev, chainWork, kernels, definition, height, timestamp, pow, false, rulesHash)
     assert.equal(ret, '0xa05ea9b3dd329bbf3e8ef68415eae102021f1d9a995d4a727cb3e307e5d17321', 'hash mismatch')
   })
 
@@ -50,9 +50,9 @@ contract('CultivationTest', function (accounts) {
     // fork2, mainnet rules
     const rulesHash = Buffer.from('1ce8f721bf0c9fa7473795a97e365ad38bbc539aab821d6912d86f24e67720fc', 'hex')
 
-    const ret = await contract.isHeaderValid.call(height, prev, chainWork, kernels, definition, timestamp, pow, rulesHash)
+    const ret = await contract.isHeaderValid.call(prev, chainWork, kernels, definition, height, timestamp, pow, rulesHash)
     assert.equal(ret, true, 'output mismatch');
-    console.log('Gas usage (block header validation)', await contract.isHeaderValid.estimateGas(height, prev, chainWork, kernels, definition, timestamp, pow, rulesHash))
+    console.log('Gas usage (block header validation)', await contract.isHeaderValid.estimateGas(prev, chainWork, kernels, definition, height, timestamp, pow, rulesHash))
   })
 
   it('random string', async () => {
