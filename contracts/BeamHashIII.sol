@@ -22,34 +22,28 @@ library BeamHashIII {
         pure
         returns (uint32[32] memory result)
     {
-        uint8 maskSize = 25;
-        uint32 mask = 1;
+        uint maskSize = 25;
+        uint mask = 1;
         mask = ((mask << maskSize) - 1);
 
-        uint8 currentSize = 0;
-        uint32 buffer = 0;
-        uint8 index = 0;
+        uint currentSize = 0;
+        uint buffer = 0;
+        uint index = 0;
 
-        uint32[32] memory ret;
-        uint32 tmp;
         // check size of soln
         for (uint i = 0; i < 100; i++)
         {
-            tmp = uint8(soln[i]);
-            tmp <<= currentSize;
-            buffer |= tmp;
+            buffer |= uint(uint8(soln[i])) << currentSize;
             currentSize += 8;
 
             if (currentSize >= maskSize)
             {
-                ret[index] = buffer & mask; 
+                result[index] = uint32(buffer & mask);
                 index++;
                 buffer >>= maskSize;
                 currentSize -= maskSize;
             }
         }
-
-        result = ret;
     }
 
     uint32 constant kColisionBitSize = 24;
@@ -124,10 +118,8 @@ library BeamHashIII {
             round++;
         }
 
-        for (uint j = 0; j < elemLite[0].workWords.length; j++) {
-            if (elemLite[0].workWords[j] != 0)
-                return false;
-        }
+        if (!elemLite[0].isZero())
+            return false;
 
         // ensure all the indices are distinct
         for (uint i = 0; i < indices.length - 1; i++) {

@@ -2,35 +2,35 @@
 pragma solidity ^0.7.0;
 
 library SipHash {
-    struct State {
-        uint64 v0;
-        uint64 v1;
-        uint64 v2;
-        uint64 v3;
-    }
-
-    function rotl(uint64 x, uint64 b)
+    function rotl(uint x, uint b)
         internal
         pure
         returns (uint64)
     {
-        return (x << b) | (x >> (64 - b));
+        return uint64((x << b)) | uint64(x >> (64 - b));
     }
 
-    function sipRound(State memory state)
-        internal
+    function sipRound(uint64 v0, uint64 v1, uint64 v2, uint64 v3)
+        private
         pure
+        returns (uint64, uint64, uint64, uint64)
     {
-        state.v0 += state.v1; state.v2 += state.v3;
-        state.v1 = rotl(state.v1, 13);
-        state.v3 = rotl(state.v3, 16);
-        state.v1 ^= state.v0; state.v3 ^= state.v2;
-        state.v0 = rotl(state.v0, 32);
-        state.v2 += state.v1; state.v0 += state.v3;
-        state.v1 = rotl(state.v1, 17);
-        state.v3 = rotl(state.v3, 21);
-        state.v1 ^= state.v2; state.v3 ^= state.v0;
-        state.v2 = rotl(state.v2, 32);
+        v0 += v1;
+        v2 += v3;
+        v1 = rotl(v1, 13);
+        v3 = rotl(v3, 16);
+        v1 ^= v0;
+        v3 ^= v2;
+        v0 = rotl(v0, 32);
+        v2 += v1;
+        v0 += v3;
+        v1 = rotl(v1, 17);
+        v3 = rotl(v3, 21);
+        v1 ^= v2;
+        v3 ^= v0;
+        v2 = rotl(v2, 32);
+
+        return (v0, v1, v2, v3);
     }
 
     function siphash24(uint64 state0, uint64 state1, uint64 state2, uint64 state3, uint64 nonce)
@@ -38,23 +38,17 @@ library SipHash {
         pure
         returns (uint64)
     {
-        State memory state;
-        state.v0 = state0;
-        state.v1 = state1;
-        state.v2 = state2;
-        state.v3 = state3;
+        state3 ^= nonce;
 
-        state.v3 ^= nonce;
+        (state0, state1, state2, state3) = sipRound(state0, state1, state2, state3);
+        (state0, state1, state2, state3) = sipRound(state0, state1, state2, state3);
+        state0 ^= nonce;
+        state2 ^= 0xff;
+        (state0, state1, state2, state3) = sipRound(state0, state1, state2, state3);
+        (state0, state1, state2, state3) = sipRound(state0, state1, state2, state3);
+        (state0, state1, state2, state3) = sipRound(state0, state1, state2, state3);
+        (state0, state1, state2, state3) = sipRound(state0, state1, state2, state3);
 
-        sipRound(state);
-        sipRound(state);
-        state.v0 ^= nonce;
-        state.v2 ^= 0xff;
-        sipRound(state);
-        sipRound(state);
-        sipRound(state);
-        sipRound(state);
-
-        return state.v0 ^ state.v1 ^ state.v2 ^ state.v3;
+        return state0 ^ state1 ^ state2 ^ state3;
     }
 }
