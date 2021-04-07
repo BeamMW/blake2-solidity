@@ -17,10 +17,20 @@ contract PipeUser {
         m_beamToken = beamToken;
     }
 
-    function proccessMessage(address receiver) public {
-        uint256 value = Pipe(m_pipeAddress).getRemoteMessage(receiver);
+    function proccessMessage(uint packageId, uint msgId) public {
+        bytes memory value = Pipe(m_pipeAddress).getRemoteMessage(packageId, msgId);
 
-        IERC20(m_beamToken).safeTransfer(receiver, value);
+        // TODO: change
+        // parse msg: [address zero padded to 33bytes][uint64 value]
+        address receiver;
+        bytes8 tmp;
+        assembly {
+            receiver := shr(96, mload(add(value, 32)))
+            tmp := mload(add(value, 65))
+        }
+        uint64 amount = BeamUtils.reverse64(uint64(tmp));
+
+        IERC20(m_beamToken).safeTransfer(receiver, amount);
     }
 
     function lock(address receiver, uint256 value) public {
