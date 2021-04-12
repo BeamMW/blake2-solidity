@@ -25,13 +25,14 @@ library StepElem {
         pure
         returns (Instance memory result)
     {
-        result.workWord0 = SipHash.siphash24(state0, state1, state2, state3, (index << 3) + 0);
-        result.workWord1 = SipHash.siphash24(state0, state1, state2, state3, (index << 3) + 1);
-        result.workWord2 = SipHash.siphash24(state0, state1, state2, state3, (index << 3) + 2);
-        result.workWord3 = SipHash.siphash24(state0, state1, state2, state3, (index << 3) + 3);
-        result.workWord4 = SipHash.siphash24(state0, state1, state2, state3, (index << 3) + 4);
-        result.workWord5 = SipHash.siphash24(state0, state1, state2, state3, (index << 3) + 5);
-        result.workWord6 = SipHash.siphash24(state0, state1, state2, state3, (index << 3) + 6);
+        index = index << 3;
+        result.workWord0 = SipHash.siphash24(state0, state1, state2, state3, index + 0);
+        result.workWord1 = SipHash.siphash24(state0, state1, state2, state3, index + 1);
+        result.workWord2 = SipHash.siphash24(state0, state1, state2, state3, index + 2);
+        result.workWord3 = SipHash.siphash24(state0, state1, state2, state3, index + 3);
+        result.workWord4 = SipHash.siphash24(state0, state1, state2, state3, index + 4);
+        result.workWord5 = SipHash.siphash24(state0, state1, state2, state3, index + 5);
+        result.workWord6 = SipHash.siphash24(state0, state1, state2, state3, index + 6);
     }
 
     function toUint64(bytes memory buffer, uint256 start)
@@ -64,45 +65,37 @@ library StepElem {
         internal
         pure
     {
-        self.workWord0 ^= other.workWord0;
-        self.workWord1 ^= other.workWord1;
-        self.workWord2 ^= other.workWord2;
-        self.workWord3 ^= other.workWord3;
-        self.workWord4 ^= other.workWord4;
-        self.workWord5 ^= other.workWord5;
-        self.workWord6 ^= other.workWord6;
-
         uint remBytes = remLen / 8;
         bytes memory buffer = new bytes(7 * 8);
 
         // copy to buffer
         {
             // revert bytes and add to buffer
-            bytes8 value = bytes8(BeamUtils.reverse64(self.workWord0));
+            bytes8 value = bytes8(BeamUtils.reverse64(self.workWord0 ^ other.workWord0));
             assembly {
                 mstore(add(buffer, 32), value)
             }
-            value = bytes8(BeamUtils.reverse64(self.workWord1));
+            value = bytes8(BeamUtils.reverse64(self.workWord1 ^ other.workWord1));
             assembly {
                 mstore(add(buffer, 40), value)
             }
-            value = bytes8(BeamUtils.reverse64(self.workWord2));
+            value = bytes8(BeamUtils.reverse64(self.workWord2 ^ other.workWord2));
             assembly {
                 mstore(add(buffer, 48), value)
             }
-            value = bytes8(BeamUtils.reverse64(self.workWord3));
+            value = bytes8(BeamUtils.reverse64(self.workWord3 ^ other.workWord3));
             assembly {
                 mstore(add(buffer, 56), value)
             }
-            value = bytes8(BeamUtils.reverse64(self.workWord4));
+            value = bytes8(BeamUtils.reverse64(self.workWord4 ^ other.workWord4));
             assembly {
                 mstore(add(buffer, 64), value)
             }
-            value = bytes8(BeamUtils.reverse64(self.workWord5));
+            value = bytes8(BeamUtils.reverse64(self.workWord5 ^ other.workWord5));
             assembly {
                 mstore(add(buffer, 72), value)
             }
-            value = bytes8(BeamUtils.reverse64(self.workWord6));
+            value = bytes8(BeamUtils.reverse64(self.workWord6 ^ other.workWord6));
             assembly {
                 mstore(add(buffer, 80), value)
             }
@@ -165,14 +158,14 @@ library StepElem {
 
         // Applyin the mix from the lined up bits
         uint64 result = 0;
-        result += SipHash.rotl(temp[0], (29 * 1) & 0x3F);
-        result += SipHash.rotl(temp[1], (29 * 2) & 0x3F);
-        result += SipHash.rotl(temp[2], (29 * 3) & 0x3F);
-        result += SipHash.rotl(temp[3], (29 * 4) & 0x3F);
-        result += SipHash.rotl(temp[4], (29 * 5) & 0x3F);
-        result += SipHash.rotl(temp[5], (29 * 6) & 0x3F);
-        result += SipHash.rotl(temp[6], (29 * 7) & 0x3F);
-        result += SipHash.rotl(temp[7], (29 * 8) & 0x3F);
+        result = SipHash.rotl(temp[0], (29 * 1) & 0x3F) +
+                 SipHash.rotl(temp[1], (29 * 2) & 0x3F) +
+                 SipHash.rotl(temp[2], (29 * 3) & 0x3F) +
+                 SipHash.rotl(temp[3], (29 * 4) & 0x3F) +
+                 SipHash.rotl(temp[4], (29 * 5) & 0x3F) +
+                 SipHash.rotl(temp[5], (29 * 6) & 0x3F) +
+                 SipHash.rotl(temp[6], (29 * 7) & 0x3F) +
+                 SipHash.rotl(temp[7], (29 * 8) & 0x3F);
 
         result = SipHash.rotl(result, 24);
 

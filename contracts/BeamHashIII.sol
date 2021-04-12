@@ -2,20 +2,11 @@
 pragma solidity ^0.7.0;
 
 import "./Blake2b.sol";
-import {SipHash} from "./SipHash.sol";
 import "./StepElem.sol";
 
 library BeamHashIII {
     using Blake2b for Blake2b.Instance;
     using StepElem for StepElem.Instance;
-
-    function siphash24(uint64 state0, uint64 state1, uint64 state2, uint64 state3, uint64 nonce)
-        public
-        pure
-        returns (uint64)
-    {
-        return SipHash.siphash24(state0, state1, state2, state3, nonce);
-    }
 
     function indexDecoder(bytes memory soln)
         public
