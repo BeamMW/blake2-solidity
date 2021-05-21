@@ -7,7 +7,7 @@ contract Blake2bTest {
     using Blake2b for Blake2b.Instance;
 
     function testOneBlock(bytes memory input, uint input_len) public returns (bytes memory) {
-        Blake2b.Instance memory instance = Blake2b.init(hex"", 32);
+        Blake2b.Instance memory instance = Blake2b.init(hex"", 32, hex"");
         return instance.finalize(input, input_len);
     }
 
@@ -21,7 +21,7 @@ contract Blake2bTest {
         assembly {
             scratch_ptr := add(scratch, 32)
         }
-        Blake2b.Instance memory instance = Blake2b.init(hex"", 64);
+        Blake2b.Instance memory instance = Blake2b.init(hex"", 64, hex"");
         for (uint i = 0; i < 512; i++) {
             assembly {
                 // This would be a 32-bit little endian number in Equihash
@@ -32,7 +32,7 @@ contract Blake2bTest {
                 ret := xor(ret, mload(add(hash, 32)))
                 ret := xor(ret, mload(add(hash, 64)))
             }
-            instance.reset(hex"", 64);
+            instance.reset(hex"", 64, hex"");
         }
     }
 
@@ -42,7 +42,7 @@ contract Blake2bTest {
         assembly {
             scratch_ptr := add(scratch, 32)
         }
-        Blake2b.Instance memory instance = Blake2b.init(hex"", 64);
+        Blake2b.Instance memory instance = Blake2b.init(hex"", 64, hex"");
         for (uint i = 0; i < 512; i++) {
             uint32 solution = solutions[i];
             assembly {
@@ -54,7 +54,7 @@ contract Blake2bTest {
                 ret := xor(ret, mload(add(hash, 32)))
                 ret := xor(ret, mload(add(hash, 64)))
             }
-            instance.reset(hex"", 64);
+            instance.reset(hex"", 64, hex"");
         }
         assert(ret == 0);
     }
