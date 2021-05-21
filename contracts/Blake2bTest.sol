@@ -1,5 +1,5 @@
-pragma solidity ^0.5.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: Apache 2.0
+pragma solidity ^0.7.0;
 
 import "./Blake2b.sol";
 
@@ -7,7 +7,7 @@ contract Blake2bTest {
     using Blake2b for Blake2b.Instance;
 
     function testOneBlock(bytes memory input, uint input_len) public returns (bytes memory) {
-        Blake2b.Instance memory instance = Blake2b.init(hex"", 64);
+        Blake2b.Instance memory instance = Blake2b.init(hex"", 32);
         return instance.finalize(input, input_len);
     }
 

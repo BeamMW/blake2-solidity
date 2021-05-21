@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache 2.0
 /*
  * Blake2b library in Solidity using EIP-152
  *
@@ -5,9 +6,7 @@
  *
  * License: Apache 2.0
  */
-
-pragma solidity ^0.5.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.7.0;
 
 library Blake2b {
     struct Instance {
@@ -204,7 +203,7 @@ library Blake2b {
         update_loop(instance, data, data_len, true);
 
         // FIXME: support other lengths
-        assert(instance.out_len == 64);
+        // assert(instance.out_len == 64);
 
         bytes memory state = instance.state;
         output = new bytes(instance.out_len);
